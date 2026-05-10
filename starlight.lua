@@ -84,7 +84,7 @@ local Starlight = {
 
 	Window = nil,
 	Notifications = nil,
-	LibInstance = nil,
+	Instance = nil,
 	OnDestroy = nil,
 
 	FileSystem = {
@@ -2274,7 +2274,7 @@ function Starlight:CreateWindow(WindowSettings)
 	Starlight.FileSystem:BuildFolderTree(WindowSettings.FileSettings)
 
 	Starlight.Window = {
-		LibInstance = mainWindow,
+		Instance = mainWindow,
 		TabSections = {},
 		CurrentTab = nil,
 		Settings = nil,
