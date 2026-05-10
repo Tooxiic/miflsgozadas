@@ -1478,7 +1478,7 @@ local function AddToolTip(InfoStr, HoverInstance)
 
 	local tooltip = Instance.new("Frame")
 	tooltip.ZIndex = 300
-	tooltip.Parent = Starlight.LibInstance.Tooltips
+	tooltip.Parent = Starlight.Instance.Tooltips
 	tooltip.Name = HoverInstance.Name
 
 	label.ZIndex = tooltip.ZIndex + 1
