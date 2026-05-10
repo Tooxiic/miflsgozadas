@@ -1390,7 +1390,7 @@ local function Hide(Interface, JustHide: boolean?, Notify: boolean?, Bind: strin
 	JustHide = JustHide or false
 
 	-- hide popups
-	if not isStudio and Starlight.LibInstance.MobileToggle.Visible then
+	if not isStudio and Starlight.Instance.MobileToggle.Visible then
 		InputManager:SendTouchEvent(0, 0, 0, 0)
 		InputManager:SendTouchEvent(0, 2, 0, 0)
 	elseif not isStudio then
@@ -1405,7 +1405,7 @@ local function Hide(Interface, JustHide: boolean?, Notify: boolean?, Bind: strin
 	end
 
 	if Notify then
-		if Starlight.LibInstance.MobileToggle.Visible then
+		if Starlight.Instance.MobileToggle.Visible then
 			Starlight:Notification({
 				Title = "Interface Hidden",
 				Icon = 87575513726659,
@@ -1747,7 +1747,7 @@ repeat
 until buildAttempts >= 2
 
 StarlightUI.Name = (((getgenv and getgenv().InterfaceName) or StarlightUI.Name) or "Starlight Interface Suite")
-Starlight.LibInstance = StarlightUI
+Starlight.Instance = StarlightUI
 StarlightUI.Enabled = false
 if not isStudio then
 	pcall(function()
@@ -2727,47 +2727,47 @@ function Starlight:CreateWindow(WindowSettings)
 			Values = ModalSettings,
 		}
 
-		Modal.LibInstance = mainWindow.ModalOverlay.Template:Clone()
-		Modal.LibInstance.Holder.Actions.Primary:Destroy()
-		Modal.LibInstance.Holder.Actions.Secondary:Destroy()
-		Modal.LibInstance.Holder.Actions.Input:Destroy()
-		Modal.LibInstance.Name = "Dialog"
+		Modal.Instance = mainWindow.ModalOverlay.Template:Clone()
+		Modal.Instance.Holder.Actions.Primary:Destroy()
+		Modal.Instance.Holder.Actions.Secondary:Destroy()
+		Modal.Instance.Holder.Actions.Input:Destroy()
+		Modal.Instance.Name = "Dialog"
 		mainWindow.Content.Interactable = false
 
 		repeat
 			task.wait()
-		until Modal.LibInstance.Holder ~= nil
-		Modal.LibInstance.Holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		until Modal.Instance.Holder ~= nil
+		Modal.Instance.Holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 			pcall(function()
-				Modal.LibInstance.Size =
-					UDim2.fromOffset(400, Modal.LibInstance.Holder and Modal.LibInstance.Holder.AbsoluteSize.Y or 0)
+				Modal.Instance.Size =
+					UDim2.fromOffset(400, Modal.Instance.Holder and Modal.Instance.Holder.AbsoluteSize.Y or 0)
 			end)
 		end)
-		Modal.LibInstance.Size = UDim2.fromOffset(400, Modal.LibInstance.Holder and Modal.LibInstance.Holder.AbsoluteSize.Y)
+		Modal.Instance.Size = UDim2.fromOffset(400, Modal.Instance.Holder and Modal.Instance.Holder.AbsoluteSize.Y)
 
 		-- Theme Binding
 		do
-			ThemeMethods.bindTheme(Modal.LibInstance, "BackgroundColor3", "Miscellaneous.LighterShadow")
-			ThemeMethods.bindTheme(Modal.LibInstance.UIStroke, "Color", "Foregrounds.Dark")
-			for _, shadow in pairs(Modal.LibInstance.DropShadowHolder:GetChildren()) do
+			ThemeMethods.bindTheme(Modal.Instance, "BackgroundColor3", "Miscellaneous.LighterShadow")
+			ThemeMethods.bindTheme(Modal.Instance.UIStroke, "Color", "Foregrounds.Dark")
+			for _, shadow in pairs(Modal.Instance.DropShadowHolder:GetChildren()) do
 				ThemeMethods.bindTheme(shadow, "ImageColor3", "Miscellaneous.LighterShadow")
 			end
 
 			acrylicEvent.Event:Connect(function()
 				if mainAcrylic then
-					Modal.LibInstance.BackgroundTransparency = 0.7
+					Modal.Instance.BackgroundTransparency = 0.7
 				else
-					Modal.LibInstance.BackgroundTransparency = 0.05
+					Modal.Instance.BackgroundTransparency = 0.05
 				end
 			end)
 		end
 
 		local connection
 		local function close(x)
-			Tween(Modal.LibInstance.UIScale, { Scale = 1.25 })
-			Hide(Modal.LibInstance)
+			Tween(Modal.Instance.UIScale, { Scale = 1.25 })
+			Hide(Modal.Instance)
 			Tween(mainWindow.ModalOverlay, { BackgroundTransparency = 1, ImageTransparency = 1 }, function()
-				Modal.LibInstance:Destroy()
+				Modal.Instance:Destroy()
 			end)
 			task.wait(0.18)
 			mainWindow.ModalOverlay.Visible = false
@@ -2780,17 +2780,17 @@ function Starlight:CreateWindow(WindowSettings)
 
 		connection = mainWindow.ModalOverlay.MouseButton1Click:Connect(close)
 
-		Modal.LibInstance.Holder.Header.TextLabel.Text = Modal.Values.Name
-		Modal.LibInstance.Holder.Header.Icon.Visible = not String.IsEmptyOrNull(Modal.Values.Icon)
-		if Modal.LibInstance.Holder.Header.Icon.Visible == false then
-			Modal.LibInstance.Holder.Header.TextLabel.Position = UDim2.fromOffset(5, 0)
+		Modal.Instance.Holder.Header.TextLabel.Text = Modal.Values.Name
+		Modal.Instance.Holder.Header.Icon.Visible = not String.IsEmptyOrNull(Modal.Values.Icon)
+		if Modal.Instance.Holder.Header.Icon.Visible == false then
+			Modal.Instance.Holder.Header.TextLabel.Position = UDim2.fromOffset(5, 0)
 		else
-			Modal.LibInstance.Holder.Header.TextLabel.Position = UDim2.fromOffset(36, 0)
+			Modal.Instance.Holder.Header.TextLabel.Position = UDim2.fromOffset(36, 0)
 		end
-		Modal.LibInstance.Holder.Header.Icon.Image = not String.IsEmptyOrNull(Modal.Values.Icon)
+		Modal.Instance.Holder.Header.Icon.Image = not String.IsEmptyOrNull(Modal.Values.Icon)
 				and "rbxassetid://" .. Modal.Values.Icon
 			or ""
-		Modal.LibInstance.Holder.Content.TextLabel.Text = Modal.Values.Content
+		Modal.Instance.Holder.Content.TextLabel.Text = Modal.Values.Content
 
 		if Modal.Values.Type == 1 then
 			for Key, Action in pairs(Modal.Values.Actions) do
@@ -2813,7 +2813,7 @@ function Starlight:CreateWindow(WindowSettings)
 					ThemeMethods.bindTheme(ActionButton.Header.Header, "TextColor3", "Foregrounds.Light")
 				end
 
-				ActionButton.Parent = Modal.LibInstance.Holder.Actions
+				ActionButton.Parent = Modal.Instance.Holder.Actions
 				ActionButton.Header.Icon.Image = not String.IsEmptyOrNull(Action.Icon)
 						and "rbxassetid://" .. Action.Icon
 					or ""
@@ -2839,7 +2839,7 @@ function Starlight:CreateWindow(WindowSettings)
 				end)
 			end
 		else
-			Modal.LibInstance.Holder.Actions.UIListLayout.FillDirection = Enum.FillDirection.Vertical
+			Modal.Instance.Holder.Actions.UIListLayout.FillDirection = Enum.FillDirection.Vertical
 			for _, Action in pairs(Modal.Values.Actions) do
 				Action.CurrentValue = Action.CurrentValue or ""
 				Action.PlaceholderText = Action.PlaceholderText or ""
@@ -2857,7 +2857,7 @@ function Starlight:CreateWindow(WindowSettings)
 				ThemeMethods.bindTheme(ActionInput.PART_Input, "TextColor3", "Foregrounds.Light")
 
 				ActionInput.Visible = true
-				ActionInput.Parent = Modal.LibInstance.Holder.Actions
+				ActionInput.Parent = Modal.Instance.Holder.Actions
 				ActionInput.PART_Input.FocusLost:Connect(function(Enter)
 					if not ActionInput then
 						return
@@ -2925,15 +2925,15 @@ function Starlight:CreateWindow(WindowSettings)
 			end
 		end
 
-		Hide(Modal.LibInstance)
+		Hide(Modal.Instance)
 		--task.wait()
-		Tween(Modal.LibInstance.UIScale, { Scale = 1 })
-		Unhide(Modal.LibInstance)
+		Tween(Modal.Instance.UIScale, { Scale = 1 })
+		Unhide(Modal.Instance)
 		task.wait(0.1)
 		mainWindow.ModalOverlay.Visible = true
 		Tween(mainWindow.ModalOverlay, { BackgroundTransparency = 0.2, ImageTransparency = 0.1 })
 
-		Modal.LibInstance.Parent = mainWindow.ModalOverlay
+		Modal.Instance.Parent = mainWindow.ModalOverlay
 		--return Modal
 	end
 
@@ -2964,31 +2964,31 @@ function Starlight:CreateWindow(WindowSettings)
 
 		if not prebuiltTabSection then
 			prebuiltTabSection = Starlight.Window:CreateTabSection()
-			prebuiltTabSection.LibInstance.LayoutOrder = -1
+			prebuiltTabSection.Instance.LayoutOrder = -1
 		end
 
 		local executorname = identifyexecutor and identifyexecutor() or "Roblox Studio"
 
-		Tab.LibInstances.Button = navigation.NavigationSectionTemplate.TabButtonTemplate:Clone()
-		Tab.LibInstances.Button.Visible = true
+		Tab.Instances.Button = navigation.NavigationSectionTemplate.TabButtonTemplate:Clone()
+		Tab.Instances.Button.Visible = true
 
-		Tab.LibInstances.Button.Header.Text = "Dashboard"
-		Tab.LibInstances.Button.Name = "HomeTab"
+		Tab.Instances.Button.Header.Text = "Dashboard"
+		Tab.Instances.Button.Name = "HomeTab"
 
-		Tab.LibInstances.Button.Icon.Image = Tab.Values.IconStyle == 1 and "rbxassetid://97461687077117"
+		Tab.Instances.Button.Icon.Image = Tab.Values.IconStyle == 1 and "rbxassetid://97461687077117"
 			or "rbxassetid://11295288868"
 
-		Tab.LibInstances.Page = tabs["HomeTab"]
-		Tab.LibInstances.Page.Visible = true
+		Tab.Instances.Page = tabs["HomeTab"]
+		Tab.Instances.Page.Visible = true
 
-		Tab.LibInstances.Page.LayoutOrder = -1
+		Tab.Instances.Page.LayoutOrder = -1
 
 		local function Activate() -- so i dont have to rewrite shit again
-			Tween(Tab.LibInstances.Button, { BackgroundTransparency = 0.5 })
-			Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-			Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-			Tab.LibInstances.Button.Icon.AccentBrighter.Enabled = true
-			Tab.LibInstances.Button.Header.AccentBrighter.Enabled = true
+			Tween(Tab.Instances.Button, { BackgroundTransparency = 0.5 })
+			Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+			Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+			Tab.Instances.Button.Icon.AccentBrighter.Enabled = true
+			Tab.Instances.Button.Header.AccentBrighter.Enabled = true
 
 			for i, v in pairs(Starlight.Window.TabSections) do
 				for _, tab in pairs(v.Tabs) do
@@ -2998,7 +2998,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 			for _, OtherTabSection in pairs(navigation:GetChildren()) do
 				for _, OtherTab in pairs(OtherTabSection:GetChildren()) do
-					if OtherTab.ClassName == "Frame" and OtherTab ~= Tab.LibInstances.Button then
+					if OtherTab.ClassName == "Frame" and OtherTab ~= Tab.Instances.Button then
 						Tween(OtherTab, { BackgroundTransparency = 1 })
 						Tween(OtherTab.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
 						Tween(OtherTab.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
@@ -3010,67 +3010,67 @@ function Starlight:CreateWindow(WindowSettings)
 
 			Tab.Active = true
 			Starlight.Window.CurrentTab = Tab
-			tabs.UIPageLayout:JumpTo(Tab.LibInstances.Page)
+			tabs.UIPageLayout:JumpTo(Tab.Instances.Page)
 		end
 
 		repeat
 			task.wait()
-		until Tab.LibInstances.Page.Parent == tabs
+		until Tab.Instances.Page.Parent == tabs
 		Activate()
 
-		Tab.LibInstances.Button.Interact["MouseButton1Click"]:Connect(Activate)
+		Tab.Instances.Button.Interact["MouseButton1Click"]:Connect(Activate)
 
-		Tab.LibInstances.Button.MouseEnter:Connect(function()
+		Tab.Instances.Button.MouseEnter:Connect(function()
 			Tab.Hover = true
 			if not Tab.Active then
-				Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-				Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+				Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+				Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
 			end
 		end)
 
-		Tab.LibInstances.Button.MouseLeave:Connect(function()
+		Tab.Instances.Button.MouseLeave:Connect(function()
 			Tab.Hover = false
 			if not Tab.Active then
-				Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
-				Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
+				Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
+				Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
 			end
 		end)
 
-		Tab.LibInstances.Page.InputBegan:Connect(function(input)
+		Tab.Instances.Page.InputBegan:Connect(function(input)
 			if
 				input.KeyCode == Enum.KeyCode.LeftShift
 				or input.KeyCode == Enum.KeyCode.RightShift
 				or input.UserInputType == Enum.UserInputType.Touch
 			then
-				Tab.LibInstances.Page.ScrollingEnabled = true
+				Tab.Instances.Page.ScrollingEnabled = true
 			end
 		end)
-		Tab.LibInstances.Page.InputEnded:Connect(function(input)
+		Tab.Instances.Page.InputEnded:Connect(function(input)
 			if
 				input.KeyCode == Enum.KeyCode.LeftShift
 				or input.KeyCode == Enum.KeyCode.RightShift
 				or input.UserInputType == Enum.UserInputType.Touch
 			then
-				Tab.LibInstances.Page.ScrollingEnabled = false
+				Tab.Instances.Page.ScrollingEnabled = false
 			end
 		end)
 
 		if TabSettings.Backdrop then
 			if TabSettings.Backdrop == 0 then
-				Tab.LibInstances.Page.ImageBackdrop.Image = "https://www.roblox.com/asset-thumbnail/image?assetId="
+				Tab.Instances.Page.ImageBackdrop.Image = "https://www.roblox.com/asset-thumbnail/image?assetId="
 					.. game.PlaceId
 					.. "&width=768&height=432&format=png"
 			else
-				Tab.LibInstances.Page.ImageBackdrop.Image = "rbxassetid://" .. TabSettings.Backdrop
-				Tab.LibInstances.Page.ImageBackdrop.Visible = not Tab.LibInstances.Page.ImageBackdrop.Visible
-				Tab.LibInstances.Page.ImageBackdrop.Visible = not Tab.LibInstances.Page.ImageBackdrop.Visible
+				Tab.Instances.Page.ImageBackdrop.Image = "rbxassetid://" .. TabSettings.Backdrop
+				Tab.Instances.Page.ImageBackdrop.Visible = not Tab.Instances.Page.ImageBackdrop.Visible
+				Tab.Instances.Page.ImageBackdrop.Visible = not Tab.Instances.Page.ImageBackdrop.Visible
 			end
 		else
-			Tab.LibInstances.Page.ImageBackdrop.Image = "rbxassetid://78881404248017"
+			Tab.Instances.Page.ImageBackdrop.Image = "rbxassetid://78881404248017"
 		end
 
-		Tab.LibInstances.Page.playerDisplay.Text = `Welcome, {Player.DisplayName}`
-		Tab.LibInstances.Page.Thumbnail.ImageLabel.Image =
+		Tab.Instances.Page.playerDisplay.Text = `Welcome, {Player.DisplayName}`
+		Tab.Instances.Page.Thumbnail.ImageLabel.Image =
 			Players:GetUserThumbnailAsync(Player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
 
 		task.spawn(function()
@@ -3089,14 +3089,14 @@ function Starlight:CreateWindow(WindowSettings)
 				else
 					greetingString = "Jeez you should be asleep..."
 				end
-				Tab.LibInstances.Page.playerUser.Text = `{greetingString} | {Player.Name}`
+				Tab.Instances.Page.playerUser.Text = `{greetingString} | {Player.Name}`
 
-				Tab.LibInstances.Page.clock.Text =
+				Tab.Instances.Page.clock.Text =
 					`{formatted}\n{string.format("%02d / %02d / %02d", t.day, t.month, t.year % 100)}`
 			end)
 		end)
 
-		for _, column in pairs(Tab.LibInstances.Page.Holder:GetChildren()) do
+		for _, column in pairs(Tab.Instances.Page.Holder:GetChildren()) do
 			if column.ClassName ~= "Frame" then
 				continue
 			end
@@ -3114,7 +3114,7 @@ function Starlight:CreateWindow(WindowSettings)
 				end)
 			end
 		end
-		Tab.LibInstances.Page.Holder.Left.Discord.Interact.MouseButton1Click:Connect(function()
+		Tab.Instances.Page.Holder.Left.Discord.Interact.MouseButton1Click:Connect(function()
 			setclipboard(tostring("https://discord.gg/" .. TabSettings.DiscordInvite))
 			if Request then
 				pcall(function()
@@ -3137,31 +3137,31 @@ function Starlight:CreateWindow(WindowSettings)
 
 		table.insert(TabSettings.UnsupportedExecutors, "Roblox Studio")
 
-		Tab.LibInstances.Page.Holder.Center.Executor.Header.Text = executorname
+		Tab.Instances.Page.Holder.Center.Executor.Header.Text = executorname
 		if table.find(TabSettings.SupportedExecutors, executorname) then
-			Tab.LibInstances.Page.Holder.Center.Executor.Subheader.Text = "Your Executor Is Supported By \nThis Script."
+			Tab.Instances.Page.Holder.Center.Executor.Subheader.Text = "Your Executor Is Supported By \nThis Script."
 		end
 		if table.find(TabSettings.UnsupportedExecutors, executorname) then
-			Tab.LibInstances.Page.Holder.Center.Executor.Subheader.Text = "Your Executor Is Unsupported \nBy This Script."
+			Tab.Instances.Page.Holder.Center.Executor.Subheader.Text = "Your Executor Is Unsupported \nBy This Script."
 		end
 
-		Tab.LibInstances.Page.Holder.Left.Server.Subheader.Text = "Currently Playing "
+		Tab.Instances.Page.Holder.Left.Server.Subheader.Text = "Currently Playing "
 			.. MarketplaceService:GetProductInfo(game.PlaceId).Name
-		Tab.LibInstances.Page.Holder.Left.Server.Frame.serverregion.Text = '<font size="14" color="#FFF" weight="semibold">Region</font>\n'
+		Tab.Instances.Page.Holder.Left.Server.Frame.serverregion.Text = '<font size="14" color="#FFF" weight="semibold">Region</font>\n'
 			.. Localization:GetCountryRegionForPlayerAsync(Player)
 
-		Tab.LibInstances.Page.Holder.Left.Server.Frame.copyjoin.MouseButton1Click:Connect(function()
+		Tab.Instances.Page.Holder.Left.Server.Frame.copyjoin.MouseButton1Click:Connect(function()
 			setclipboard(
 				`game:GetService("TeleportService"):TeleportToPlaceInstance({game.PlaceId}, "{game.JobId}", game:GetService("Players").LocalPlayer)`
 			)
 		end)
 
 		local function updatePlayerCount()
-			Tab.LibInstances.Page.Holder.Left.Server.Frame.playercount.Text = '<font size="14" color="#FFF" weight="semibold">Players</font>\n'
+			Tab.Instances.Page.Holder.Left.Server.Frame.playercount.Text = '<font size="14" color="#FFF" weight="semibold">Players</font>\n'
 				.. #Players:GetChildren()
 				.. (#Players:GetChildren() > 1 and " Players" or " Player")
 				.. " In\nThis Server"
-			Tab.LibInstances.Page.Holder.Left.Server.Frame.maxplayers.Text = '<font size="14" color="#FFF" weight="semibold">Capacity</font>\n'
+			Tab.Instances.Page.Holder.Left.Server.Frame.maxplayers.Text = '<font size="14" color="#FFF" weight="semibold">Capacity</font>\n'
 				.. Players.MaxPlayers
 				.. (Players.MaxPlayers > 1 and " Players" or " Player")
 				.. " In\ncan join."
@@ -3172,7 +3172,7 @@ function Starlight:CreateWindow(WindowSettings)
 		updatePlayerCount()
 		local localconnections =
 			{ Players.ChildAdded:Connect(protectedUpdate), Players.ChildRemoved:Connect(protectedUpdate) }
-		Tab.LibInstances.Page.Holder.Left.Server.Frame.playercount.Destroying:Connect(function()
+		Tab.Instances.Page.Holder.Left.Server.Frame.playercount.Destroying:Connect(function()
 			for _, connection in pairs(localconnections) do
 				connection:Disconnect()
 			end
@@ -3225,16 +3225,16 @@ function Starlight:CreateWindow(WindowSettings)
 					end
 				end
 
-				Tab.LibInstances.Page.Holder.Right.Friends.Frame.total.Text = '<font size="14" color="#FFF" weight="semibold">Total</font>\n'
+				Tab.Instances.Page.Holder.Right.Friends.Frame.total.Text = '<font size="14" color="#FFF" weight="semibold">Total</font>\n'
 					.. tostring(friendsInTotal)
 					.. " friends"
-				Tab.LibInstances.Page.Holder.Right.Friends.Frame.offline.Text = '<font size="14" color="#FFF" weight="semibold">Offline</font>\n'
+				Tab.Instances.Page.Holder.Right.Friends.Frame.offline.Text = '<font size="14" color="#FFF" weight="semibold">Offline</font>\n'
 					.. tostring(friendsInTotal - onlineFriends)
 					.. " friends"
-				Tab.LibInstances.Page.Holder.Right.Friends.Frame.online.Text = '<font size="14" color="#FFF" weight="semibold">Online</font>\n'
+				Tab.Instances.Page.Holder.Right.Friends.Frame.online.Text = '<font size="14" color="#FFF" weight="semibold">Online</font>\n'
 					.. tostring(onlineFriends)
 					.. " friends"
-				Tab.LibInstances.Page.Holder.Right.Friends.Frame.inserver.Text = '<font size="14" color="#FFF" weight="semibold">In Server</font>\n'
+				Tab.Instances.Page.Holder.Right.Friends.Frame.inserver.Text = '<font size="14" color="#FFF" weight="semibold">In Server</font>\n'
 					.. tostring(friendsInGame)
 					.. " friends"
 			else
@@ -3250,7 +3250,7 @@ function Starlight:CreateWindow(WindowSettings)
 			end
 
 			FrameUpdateTable[1] = LastIteration
-			Tab.LibInstances.Page.Holder.Left.Server.Frame.latency.Text =
+			Tab.Instances.Page.Holder.Left.Server.Frame.latency.Text =
 				`<font size="14" color="#FFF" weight="semibold">Latency</font>\n{tostring(
 					math.floor(
 						TimeFunction() - Start >= 1 and #FrameUpdateTable
@@ -3270,46 +3270,46 @@ function Starlight:CreateWindow(WindowSettings)
 				end
 			end
 
-			Tab.LibInstances.Page.Holder.Left.Server.Frame.time.Text = '<font size="14" color="#FFF" weight="semibold">Players</font>\n'
+			Tab.Instances.Page.Holder.Left.Server.Frame.time.Text = '<font size="14" color="#FFF" weight="semibold">Players</font>\n'
 				.. convertToHMS(time())
 		end
 
 		if TabSettings.Changelog[1] then
-			Tab.LibInstances.Page.Holder.Center.Changelog.latest.Visible = true
-			Tab.LibInstances.Page.Holder.Center.Changelog.latest.Header.Text = TabSettings.Changelog[1].Title
-			Tab.LibInstances.Page.Holder.Center.Changelog.latest.date.Text = TabSettings.Changelog[1].Date
-			Tab.LibInstances.Page.Holder.Center.Changelog.latest.desc.Text = TabSettings.Changelog[1].Description
+			Tab.Instances.Page.Holder.Center.Changelog.latest.Visible = true
+			Tab.Instances.Page.Holder.Center.Changelog.latest.Header.Text = TabSettings.Changelog[1].Title
+			Tab.Instances.Page.Holder.Center.Changelog.latest.date.Text = TabSettings.Changelog[1].Date
+			Tab.Instances.Page.Holder.Center.Changelog.latest.desc.Text = TabSettings.Changelog[1].Description
 		end
 
 		checkFriends()
 		Start = TimeFunction()
 		connections.__fpscheck = RunService.Heartbeat:Connect(HeartbeatUpdate)
 
-		ThemeMethods.bindTheme(Tab.LibInstances.Button, "BackgroundColor3", "Backgrounds.Dark")
-		ThemeMethods.bindTheme(Tab.LibInstances.Button.Accent, "Color", "Accents.Main")
-		ThemeMethods.bindTheme(Tab.LibInstances.Button.Icon.AccentBrighter, "Color", "Accents.Brighter")
-		ThemeMethods.bindTheme(Tab.LibInstances.Button.Header.AccentBrighter, "Color", "Accents.Brighter")
-		ThemeMethods.bindTheme(Tab.LibInstances.Button.Icon, "ImageColor3", "Foregrounds.Medium")
-		ThemeMethods.bindTheme(Tab.LibInstances.Button.Header, "TextColor3", "Foregrounds.Medium")
+		ThemeMethods.bindTheme(Tab.Instances.Button, "BackgroundColor3", "Backgrounds.Dark")
+		ThemeMethods.bindTheme(Tab.Instances.Button.Accent, "Color", "Accents.Main")
+		ThemeMethods.bindTheme(Tab.Instances.Button.Icon.AccentBrighter, "Color", "Accents.Brighter")
+		ThemeMethods.bindTheme(Tab.Instances.Button.Header.AccentBrighter, "Color", "Accents.Brighter")
+		ThemeMethods.bindTheme(Tab.Instances.Button.Icon, "ImageColor3", "Foregrounds.Medium")
+		ThemeMethods.bindTheme(Tab.Instances.Button.Header, "TextColor3", "Foregrounds.Medium")
 		themeEvent.Event:Connect(function()
-			if tabs.UIPageLayout.CurrentPage == Tab.LibInstances.Page then
+			if tabs.UIPageLayout.CurrentPage == Tab.Instances.Page then
 				Activate()
 			end
 		end)
-		ThemeMethods.bindTheme(Tab.LibInstances.Page.Fade, "BackgroundColor3", "Backgrounds.Dark")
-		ThemeMethods.bindTheme(Tab.LibInstances.Page.Fade2, "BackgroundColor3", "Backgrounds.Dark")
-		ThemeMethods.bindTheme(Tab.LibInstances.Page.Thumbnail, "BackgroundColor3", "Backgrounds.Dark")
-		for _, shadow in pairs(Tab.LibInstances.Page.Thumbnail.DropShadowHolder:GetChildren()) do
+		ThemeMethods.bindTheme(Tab.Instances.Page.Fade, "BackgroundColor3", "Backgrounds.Dark")
+		ThemeMethods.bindTheme(Tab.Instances.Page.Fade2, "BackgroundColor3", "Backgrounds.Dark")
+		ThemeMethods.bindTheme(Tab.Instances.Page.Thumbnail, "BackgroundColor3", "Backgrounds.Dark")
+		for _, shadow in pairs(Tab.Instances.Page.Thumbnail.DropShadowHolder:GetChildren()) do
 			ThemeMethods.bindTheme(shadow, "ImageColor3", "Miscellaneous.Shadow")
 		end
-		ThemeMethods.bindTheme(Tab.LibInstances.Page.Thumbnail.UIStroke, "Color", "Foregrounds.Dark")
-		for _, text in pairs(Tab.LibInstances.Page:GetChildren()) do
+		ThemeMethods.bindTheme(Tab.Instances.Page.Thumbnail.UIStroke, "Color", "Foregrounds.Dark")
+		for _, text in pairs(Tab.Instances.Page:GetChildren()) do
 			if text.ClassName ~= "TextLabel" then
 				continue
 			end
 			ThemeMethods.bindTheme(text, "TextColor3", "Foregrounds.Light")
 		end
-		for _, side in pairs(Tab.LibInstances.Page.Holder:GetChildren()) do
+		for _, side in pairs(Tab.Instances.Page.Holder:GetChildren()) do
 			if side.ClassName ~= "Frame" then
 				continue
 			end
@@ -3327,12 +3327,12 @@ function Starlight:CreateWindow(WindowSettings)
 		end
 
 		function Tab:Destroy()
-			Tab.LibInstances.Page:Destroy()
-			Tab.LibInstances.Button:Destroy()
+			Tab.Instances.Page:Destroy()
+			Tab.Instances.Button:Destroy()
 			connections.__homeTabTime:Disconnect()
 		end
 
-		Tab.LibInstances.Button.Parent = prebuiltTabSection.LibInstance
+		Tab.Instances.Button.Parent = prebuiltTabSection.Instance
 		prebuiltTabSection.Tabs["prebuilthometab"] = Tab
 		return Tab
 	end
@@ -3346,30 +3346,30 @@ function Starlight:CreateWindow(WindowSettings)
 			Name = Name,
 		}
 
-		TabSection.LibInstance = navigation.NavigationSectionTemplate:Clone()
-		TabSection.LibInstance.TabButtonTemplate:Destroy()
-		TabSection.LibInstance.Visible = true
+		TabSection.Instance = navigation.NavigationSectionTemplate:Clone()
+		TabSection.Instance.TabButtonTemplate:Destroy()
+		TabSection.Instance.Visible = true
 
-		TabSection.LibInstance.Header.Text = Name
-		TabSection.LibInstance.Name = "TAB_SECTION_" .. Name
-		TabSection.LibInstance.Header.Visible = Visible
+		TabSection.Instance.Header.Text = Name
+		TabSection.Instance.Name = "TAB_SECTION_" .. Name
+		TabSection.Instance.Header.Visible = Visible
 
 		-- Theme Binding
 		do
-			ThemeMethods.bindTheme(TabSection.LibInstance.Header, "TextColor3", "Foregrounds.Medium")
+			ThemeMethods.bindTheme(TabSection.Instance.Header, "TextColor3", "Foregrounds.Medium")
 		end
 
 		--// SUBSECTION : User Methods
 
 		function TabSection:Set(NewName)
 			Name = NewName
-			TabSection.LibInstance.Header.Text = Name
-			TabSection.LibInstance.Name = "TAB_SECTION_" .. Name
+			TabSection.Instance.Header.Text = Name
+			TabSection.Instance.Name = "TAB_SECTION_" .. Name
 			Starlight.Window.TabSections[Name] = TabSection
 		end
 
 		function TabSection:Destroy()
-			TabSection.LibInstance:Destroy()
+			TabSection.Instance:Destroy()
 			for _, tab in pairs(TabSection.Tabs) do
 				tab:Destroy()
 			end
@@ -3399,34 +3399,34 @@ function Starlight:CreateWindow(WindowSettings)
 				Hover = false,
 			}
 
-			Tab.LibInstances.Button = navigation.NavigationSectionTemplate.TabButtonTemplate:Clone()
-			Tab.LibInstances.Button.Visible = true
+			Tab.Instances.Button = navigation.NavigationSectionTemplate.TabButtonTemplate:Clone()
+			Tab.Instances.Button.Visible = true
 
-			Tab.LibInstances.Button.Header.Text = TabSettings.Name
-			Tab.LibInstances.Button.Name = "TAB_" .. TabIndex
+			Tab.Instances.Button.Header.Text = TabSettings.Name
+			Tab.Instances.Button.Name = "TAB_" .. TabIndex
 
-			Tab.LibInstances.Button.Header.UIPadding.PaddingLeft =
+			Tab.Instances.Button.Header.UIPadding.PaddingLeft =
 				UDim.new(0, not String.IsEmptyOrNull(Tab.Values.Icon) and 36 or 8)
-			Tab.LibInstances.Button.Icon.Image = "rbxassetid://" .. Tab.Values.Icon
+			Tab.Instances.Button.Icon.Image = "rbxassetid://" .. Tab.Values.Icon
 
-			Tab.LibInstances.Page = tabs["Tab_TEMPLATE"]:Clone()
-			for i, v in pairs(Tab.LibInstances.Page:GetChildren()) do
+			Tab.Instances.Page = tabs["Tab_TEMPLATE"]:Clone()
+			for i, v in pairs(Tab.Instances.Page:GetChildren()) do
 				if v.ClassName == "ScrollingFrame" then
 					v:Destroy()
 				end
 			end
-			Tab.LibInstances.Page.Visible = true
-			Tab.LibInstances.Page.Name = "TAB_" .. TabIndex
-			Tab.LibInstances.Page.Parent = tabs
+			Tab.Instances.Page.Visible = true
+			Tab.Instances.Page.Name = "TAB_" .. TabIndex
+			Tab.Instances.Page.Parent = tabs
 
-			Tab.LibInstances.Page.LayoutOrder = #tabs:GetChildren() - 2
+			Tab.Instances.Page.LayoutOrder = #tabs:GetChildren() - 2
 
 			local function Activate() -- so i dont have to rewrite shit again
-				Tween(Tab.LibInstances.Button, { BackgroundTransparency = 0.5 })
-				Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-				Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-				Tab.LibInstances.Button.Icon.AccentBrighter.Enabled = true
-				Tab.LibInstances.Button.Header.AccentBrighter.Enabled = true
+				Tween(Tab.Instances.Button, { BackgroundTransparency = 0.5 })
+				Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+				Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+				Tab.Instances.Button.Icon.AccentBrighter.Enabled = true
+				Tab.Instances.Button.Header.AccentBrighter.Enabled = true
 
 				for i, v in pairs(Starlight.Window.TabSections) do
 					for _, tab in pairs(v.Tabs) do
@@ -3436,7 +3436,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 				for _, OtherTabSection in pairs(navigation:GetChildren()) do
 					for _, OtherTab in pairs(OtherTabSection:GetChildren()) do
-						if OtherTab.ClassName == "Frame" and OtherTab ~= Tab.LibInstances.Button then
+						if OtherTab.ClassName == "Frame" and OtherTab ~= Tab.Instances.Button then
 							Tween(OtherTab, { BackgroundTransparency = 1 })
 							Tween(OtherTab.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
 							Tween(OtherTab.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
@@ -3448,84 +3448,84 @@ function Starlight:CreateWindow(WindowSettings)
 
 				Tab.Active = true
 				Starlight.Window.CurrentTab = Tab
-				tabs.UIPageLayout:JumpTo(Tab.LibInstances.Page)
+				tabs.UIPageLayout:JumpTo(Tab.Instances.Page)
 			end
 
 			if Starlight.Window.CurrentTab == nil then
 				--task.spawn(function()
 				repeat
 					task.wait()
-				until Tab.LibInstances.Page.Parent == tabs
+				until Tab.Instances.Page.Parent == tabs
 				Activate()
 				--end)
 			end
 
-			Tab.LibInstances.Button.Interact["MouseButton1Click"]:Connect(Activate)
+			Tab.Instances.Button.Interact["MouseButton1Click"]:Connect(Activate)
 
-			Tab.LibInstances.Button.MouseEnter:Connect(function()
+			Tab.Instances.Button.MouseEnter:Connect(function()
 				Tab.Hover = true
 				if not Tab.Active then
-					Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-					Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+					Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+					Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
 				end
 			end)
 
-			Tab.LibInstances.Button.MouseLeave:Connect(function()
+			Tab.Instances.Button.MouseLeave:Connect(function()
 				Tab.Hover = false
 				if not Tab.Active then
-					Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
-					Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
+					Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
+					Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
 				end
 			end)
 
-			Tab.LibInstances.Page.InputBegan:Connect(function(input)
+			Tab.Instances.Page.InputBegan:Connect(function(input)
 				if
 					input.KeyCode == Enum.KeyCode.LeftShift
 					or input.KeyCode == Enum.KeyCode.RightShift
 					or input.UserInputType == Enum.UserInputType.Touch
 				then
-					Tab.LibInstances.Page.ScrollingEnabled = true
+					Tab.Instances.Page.ScrollingEnabled = true
 				end
 			end)
-			Tab.LibInstances.Page.InputEnded:Connect(function(input)
+			Tab.Instances.Page.InputEnded:Connect(function(input)
 				if
 					input.KeyCode == Enum.KeyCode.LeftShift
 					or input.KeyCode == Enum.KeyCode.RightShift
 					or input.UserInputType == Enum.UserInputType.Touch
 				then
-					Tab.LibInstances.Page.ScrollingEnabled = false
+					Tab.Instances.Page.ScrollingEnabled = false
 				end
 			end)
 
-			ThemeMethods.bindTheme(Tab.LibInstances.Button, "BackgroundColor3", "Backgrounds.Dark")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Accent, "Color", "Accents.Main")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Icon.AccentBrighter, "Color", "Accents.Brighter")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Header.AccentBrighter, "Color", "Accents.Brighter")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Icon, "ImageColor3", "Foregrounds.Medium")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Header, "TextColor3", "Foregrounds.Medium")
+			ThemeMethods.bindTheme(Tab.Instances.Button, "BackgroundColor3", "Backgrounds.Dark")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Accent, "Color", "Accents.Main")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Icon.AccentBrighter, "Color", "Accents.Brighter")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Header.AccentBrighter, "Color", "Accents.Brighter")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Icon, "ImageColor3", "Foregrounds.Medium")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Header, "TextColor3", "Foregrounds.Medium")
 			themeEvent.Event:Connect(function()
-				if tabs.UIPageLayout.CurrentPage == Tab.LibInstances.Page then
+				if tabs.UIPageLayout.CurrentPage == Tab.Instances.Page then
 					Activate()
 				end
 			end)
 
-			TabSettings.Page.Parent = Tab.LibInstances.Page
+			TabSettings.Page.Parent = Tab.Instances.Page
 
 			--// SUBSECTION : User Methods
 
 			function Tab:Set(NewTabSettings)
 				TabSettings = NewTabSettings
 				Tab.Values = TabSettings
-				Tab.LibInstances.Button.Header.Text = TabSettings.Name
-				Tab.LibInstances.Button.Name = "TAB_" .. TabIndex
-				Tab.LibInstances.Page.Name = "TAB_" .. TabIndex
-				Tab.LibInstances.Button.Icon.Image = "rbxassetid://" .. TabSettings.Icon
+				Tab.Instances.Button.Header.Text = TabSettings.Name
+				Tab.Instances.Button.Name = "TAB_" .. TabIndex
+				Tab.Instances.Page.Name = "TAB_" .. TabIndex
+				Tab.Instances.Button.Icon.Image = "rbxassetid://" .. TabSettings.Icon
 				Starlight.Window.TabSections[Name].Tabs[TabIndex].Values = Tab.Values
 			end
 
 			function Tab:Destroy()
-				Tab.LibInstances.Button:Destroy()
-				Tab.LibInstances.Page:Destroy()
+				Tab.Instances.Button:Destroy()
+				Tab.Instances.Page:Destroy()
 				for _, groupbox in pairs(Tab.Groupboxes) do
 					groupbox:Destroy()
 				end
@@ -3534,7 +3534,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 			--// ENDSUBSECTION
 
-			Tab.LibInstances.Button.Parent = Starlight.Window.TabSections[Name].LibInstance
+			Tab.Instances.Button.Parent = Starlight.Window.TabSections[Name].Instance
 			Starlight.Window.TabSections[Name].Tabs[TabIndex] = Tab
 			return Starlight.Window.TabSections[Name].Tabs[TabIndex]
 		end
@@ -3562,34 +3562,34 @@ function Starlight:CreateWindow(WindowSettings)
 				Hover = false,
 			}
 
-			Tab.LibInstances.Button = navigation.NavigationSectionTemplate.TabButtonTemplate:Clone()
-			Tab.LibInstances.Button.Visible = true
+			Tab.Instances.Button = navigation.NavigationSectionTemplate.TabButtonTemplate:Clone()
+			Tab.Instances.Button.Visible = true
 
-			Tab.LibInstances.Button.Header.Text = TabSettings.Name
-			Tab.LibInstances.Button.Name = "TAB_" .. TabIndex
+			Tab.Instances.Button.Header.Text = TabSettings.Name
+			Tab.Instances.Button.Name = "TAB_" .. TabIndex
 
-			Tab.LibInstances.Button.Header.UIPadding.PaddingLeft =
+			Tab.Instances.Button.Header.UIPadding.PaddingLeft =
 				UDim.new(0, not String.IsEmptyOrNull(Tab.Values.Icon) and 36 or 8)
-			Tab.LibInstances.Button.Icon.Image = "rbxassetid://" .. Tab.Values.Icon
+			Tab.Instances.Button.Icon.Image = "rbxassetid://" .. Tab.Values.Icon
 
-			Tab.LibInstances.Page = tabs["Tab_TEMPLATE"]:Clone()
-			for i, v in pairs(Tab.LibInstances.Page:GetChildren()) do
+			Tab.Instances.Page = tabs["Tab_TEMPLATE"]:Clone()
+			for i, v in pairs(Tab.Instances.Page:GetChildren()) do
 				if v.ClassName == "ScrollingFrame" then
 					v:Destroy()
 				end
 			end
-			Tab.LibInstances.Page.Visible = true
-			Tab.LibInstances.Page.Name = "TAB_" .. TabIndex
-			Tab.LibInstances.Page.Parent = tabs
+			Tab.Instances.Page.Visible = true
+			Tab.Instances.Page.Name = "TAB_" .. TabIndex
+			Tab.Instances.Page.Parent = tabs
 
-			Tab.LibInstances.Page.LayoutOrder = #tabs:GetChildren() - 2
+			Tab.Instances.Page.LayoutOrder = #tabs:GetChildren() - 2
 
 			local function Activate() -- so i dont have to rewrite shit again
-				Tween(Tab.LibInstances.Button, { BackgroundTransparency = 0.5 })
-				Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-				Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-				Tab.LibInstances.Button.Icon.AccentBrighter.Enabled = true
-				Tab.LibInstances.Button.Header.AccentBrighter.Enabled = true
+				Tween(Tab.Instances.Button, { BackgroundTransparency = 0.5 })
+				Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+				Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+				Tab.Instances.Button.Icon.AccentBrighter.Enabled = true
+				Tab.Instances.Button.Header.AccentBrighter.Enabled = true
 
 				for i, v in pairs(Starlight.Window.TabSections) do
 					for _, tab in pairs(v.Tabs) do
@@ -3599,7 +3599,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 				for _, OtherTabSection in pairs(navigation:GetChildren()) do
 					for _, OtherTab in pairs(OtherTabSection:GetChildren()) do
-						if OtherTab.ClassName == "Frame" and OtherTab ~= Tab.LibInstances.Button then
+						if OtherTab.ClassName == "Frame" and OtherTab ~= Tab.Instances.Button then
 							Tween(OtherTab, { BackgroundTransparency = 1 })
 							Tween(OtherTab.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
 							Tween(OtherTab.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
@@ -3611,58 +3611,58 @@ function Starlight:CreateWindow(WindowSettings)
 
 				Tab.Active = true
 				Starlight.Window.CurrentTab = Tab
-				tabs.UIPageLayout:JumpTo(Tab.LibInstances.Page)
+				tabs.UIPageLayout:JumpTo(Tab.Instances.Page)
 			end
 
 			if Starlight.Window.CurrentTab == nil then
 				--task.spawn(function()
 				repeat
 					task.wait()
-				until Tab.LibInstances.Page.Parent == tabs
+				until Tab.Instances.Page.Parent == tabs
 				Activate()
 				--end)
 			end
 
-			Tab.LibInstances.Button.Interact["MouseButton1Click"]:Connect(Activate)
+			Tab.Instances.Button.Interact["MouseButton1Click"]:Connect(Activate)
 
-			Tab.LibInstances.Button.MouseEnter:Connect(function()
+			Tab.Instances.Button.MouseEnter:Connect(function()
 				Tab.Hover = true
 				if not Tab.Active then
-					Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
-					Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+					Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Light })
+					Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Light })
 				end
 			end)
 
-			Tab.LibInstances.Button.MouseLeave:Connect(function()
+			Tab.Instances.Button.MouseLeave:Connect(function()
 				Tab.Hover = false
 				if not Tab.Active then
-					Tween(Tab.LibInstances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
-					Tween(Tab.LibInstances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
+					Tween(Tab.Instances.Button.Icon, { ImageColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
+					Tween(Tab.Instances.Button.Header, { TextColor3 = Starlight.CurrentTheme.Foregrounds.Medium })
 				end
 			end)
 
-			Tab.LibInstances.Page.InputBegan:Connect(function(input)
+			Tab.Instances.Page.InputBegan:Connect(function(input)
 				if
 					input.KeyCode == Enum.KeyCode.LeftShift
 					or input.KeyCode == Enum.KeyCode.RightShift
 					or input.UserInputType == Enum.UserInputType.Touch
 				then
-					Tab.LibInstances.Page.ScrollingEnabled = true
+					Tab.Instances.Page.ScrollingEnabled = true
 				end
 			end)
-			Tab.LibInstances.Page.InputEnded:Connect(function(input)
+			Tab.Instances.Page.InputEnded:Connect(function(input)
 				if
 					input.KeyCode == Enum.KeyCode.LeftShift
 					or input.KeyCode == Enum.KeyCode.RightShift
 					or input.UserInputType == Enum.UserInputType.Touch
 				then
-					Tab.LibInstances.Page.ScrollingEnabled = false
+					Tab.Instances.Page.ScrollingEnabled = false
 				end
 			end)
 
 			for i = 1, TabSettings.Columns do
 				local column = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate:Clone()
-				column.Parent = Tab.LibInstances.Page
+				column.Parent = Tab.Instances.Page
 				column.LayoutOrder = i
 				column.Name = "Column_" .. i
 				for i, v in column:GetChildren() do
@@ -3692,7 +3692,7 @@ function Starlight:CreateWindow(WindowSettings)
 					else
 						fadetop.BackgroundTransparency = 1
 					end
-					fadetop.Visible = tabs.UIPageLayout.CurrentPage == Tab.LibInstances.Page
+					fadetop.Visible = tabs.UIPageLayout.CurrentPage == Tab.Instances.Page
 				end
 
 				local function updBottom()
@@ -3701,7 +3701,7 @@ function Starlight:CreateWindow(WindowSettings)
 					else
 						fadebottom.BackgroundTransparency = 1
 					end
-					fadebottom.Visible = tabs.UIPageLayout.CurrentPage == Tab.LibInstances.Page
+					fadebottom.Visible = tabs.UIPageLayout.CurrentPage == Tab.Instances.Page
 				end
 				acrylicEvent.Event:Connect(function()
 					if mainAcrylic then
@@ -3729,14 +3729,14 @@ function Starlight:CreateWindow(WindowSettings)
 				fadebottom.Parent = mainWindow.Content.ContentMain.FadesBottom
 			end
 
-			ThemeMethods.bindTheme(Tab.LibInstances.Button, "BackgroundColor3", "Backgrounds.Dark")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Accent, "Color", "Accents.Main")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Icon.AccentBrighter, "Color", "Accents.Brighter")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Header.AccentBrighter, "Color", "Accents.Brighter")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Icon, "ImageColor3", "Foregrounds.Medium")
-			ThemeMethods.bindTheme(Tab.LibInstances.Button.Header, "TextColor3", "Foregrounds.Medium")
+			ThemeMethods.bindTheme(Tab.Instances.Button, "BackgroundColor3", "Backgrounds.Dark")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Accent, "Color", "Accents.Main")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Icon.AccentBrighter, "Color", "Accents.Brighter")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Header.AccentBrighter, "Color", "Accents.Brighter")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Icon, "ImageColor3", "Foregrounds.Medium")
+			ThemeMethods.bindTheme(Tab.Instances.Button.Header, "TextColor3", "Foregrounds.Medium")
 			themeEvent.Event:Connect(function()
-				if tabs.UIPageLayout.CurrentPage == Tab.LibInstances.Page then
+				if tabs.UIPageLayout.CurrentPage == Tab.Instances.Page then
 					Activate()
 				end
 			end)
@@ -3746,16 +3746,16 @@ function Starlight:CreateWindow(WindowSettings)
 			function Tab:Set(NewTabSettings)
 				TabSettings = NewTabSettings
 				Tab.Values = TabSettings
-				Tab.LibInstances.Button.Header.Text = TabSettings.Name
-				Tab.LibInstances.Button.Name = "TAB_" .. TabIndex
-				Tab.LibInstances.Page.Name = "TAB_" .. TabIndex
-				Tab.LibInstances.Button.Icon.Image = "rbxassetid://" .. TabSettings.Icon
+				Tab.Instances.Button.Header.Text = TabSettings.Name
+				Tab.Instances.Button.Name = "TAB_" .. TabIndex
+				Tab.Instances.Page.Name = "TAB_" .. TabIndex
+				Tab.Instances.Button.Icon.Image = "rbxassetid://" .. TabSettings.Icon
 				Starlight.Window.TabSections[Name].Tabs[TabIndex].Values = Tab.Values
 			end
 
 			function Tab:Destroy()
-				Tab.LibInstances.Button:Destroy()
-				Tab.LibInstances.Page:Destroy()
+				Tab.Instances.Button:Destroy()
+				Tab.Instances.Page:Destroy()
 				for _, groupbox in pairs(Tab.Groupboxes) do
 					groupbox:Destroy()
 				end
@@ -3766,11 +3766,11 @@ function Starlight:CreateWindow(WindowSettings)
 			--[[function Tab:CreateDivider(Column) -- will be changed in next update to be other items where its linked back to the library
 				local Divider = {}
 
-				Divider.LibInstance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate.Divider:Clone()
-				Divider.LibInstance.Parent = Tab.LibInstances.Page["Column_" .. Column]
+				Divider.Instance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate.Divider:Clone()
+				Divider.Instance.Parent = Tab.Instances.Page["Column_" .. Column]
 
 				function Divider:Destroy()
-					Divider.LibInstance:Destroy()
+					Divider.Instance:Destroy()
 				end
 
 				return Divider
@@ -3801,62 +3801,62 @@ function Starlight:CreateWindow(WindowSettings)
 				local GroupboxTemplateInstance = nil
 
 				task.spawn(function()
-					Groupbox.LibInstance = nil
+					Groupbox.Instance = nil
 					if GroupboxSettings.Style == 1 then
-						Groupbox.LibInstance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate["Groupbox_Style1"]:Clone()
-						for i, v in pairs(Groupbox.LibInstance.PART_Content:GetChildren()) do
+						Groupbox.Instance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate["Groupbox_Style1"]:Clone()
+						for i, v in pairs(Groupbox.Instance.PART_Content:GetChildren()) do
 							if v.ClassName == "Frame" then
 								v:Destroy()
 							end
 						end
 					else
-						Groupbox.LibInstance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate2["Groupbox_Style2"]:Clone()
+						Groupbox.Instance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate2["Groupbox_Style2"]:Clone()
 					end
-					Groupbox.LibInstance.PART_Content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-						Groupbox.LibInstance.PART_Backdrop.Inner.Visible = false
-						Groupbox.LibInstance.PART_Backdrop.Inner.Size = UDim2.fromOffset(
-							Groupbox.LibInstance.PART_Backdrop.AbsoluteSize.X - 2,
-							Groupbox.LibInstance.PART_Backdrop.AbsoluteSize.Y - 2
+					Groupbox.Instance.PART_Content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+						Groupbox.Instance.PART_Backdrop.Inner.Visible = false
+						Groupbox.Instance.PART_Backdrop.Inner.Size = UDim2.fromOffset(
+							Groupbox.Instance.PART_Backdrop.AbsoluteSize.X - 2,
+							Groupbox.Instance.PART_Backdrop.AbsoluteSize.Y - 2
 						)
-						Groupbox.LibInstance.PART_Backdrop.Inner.Visible = true
+						Groupbox.Instance.PART_Backdrop.Inner.Visible = true
 					end)
-					Groupbox.LibInstance.PART_Backdrop.Inner.Visible = false
-					Groupbox.LibInstance.PART_Backdrop.Inner.Size = UDim2.fromOffset(
-						Groupbox.LibInstance.PART_Backdrop.AbsoluteSize.X - 2,
-						Groupbox.LibInstance.PART_Backdrop.AbsoluteSize.Y - 2
+					Groupbox.Instance.PART_Backdrop.Inner.Visible = false
+					Groupbox.Instance.PART_Backdrop.Inner.Size = UDim2.fromOffset(
+						Groupbox.Instance.PART_Backdrop.AbsoluteSize.X - 2,
+						Groupbox.Instance.PART_Backdrop.AbsoluteSize.Y - 2
 					)
-					Groupbox.LibInstance.PART_Backdrop.Inner.Visible = true
+					Groupbox.Instance.PART_Backdrop.Inner.Visible = true
 
-					Groupbox.ParentingItem = Groupbox.LibInstance.PART_Content
+					Groupbox.ParentingItem = Groupbox.Instance.PART_Content
 
 					GroupboxTemplateInstance =
 						tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate["Groupbox_Style1"].PART_Content
 
-					Groupbox.LibInstance.Header.Text = GroupboxSettings.Name
-					Groupbox.LibInstance.Header.UIPadding.PaddingLeft =
+					Groupbox.Instance.Header.Text = GroupboxSettings.Name
+					Groupbox.Instance.Header.UIPadding.PaddingLeft =
 						UDim.new(0, not String.IsEmptyOrNull(GroupboxSettings.Icon) and 32 or 6)
-					Groupbox.LibInstance.Header.Icon.Image = "rbxassetid://" .. GroupboxSettings.Icon
-					Groupbox.LibInstance.Name = "GROUPBOX_" .. GroupIndex
+					Groupbox.Instance.Header.Icon.Image = "rbxassetid://" .. GroupboxSettings.Icon
+					Groupbox.Instance.Name = "GROUPBOX_" .. GroupIndex
 
-					ThemeMethods.bindTheme(Groupbox.LibInstance.Header, "TextColor3", "Foregrounds.Medium")
-					ThemeMethods.bindTheme(Groupbox.LibInstance.Header.Icon, "ImageColor3", "Foregrounds.Medium")
-					ThemeMethods.bindTheme(Groupbox.LibInstance.PART_Backdrop, "BackgroundColor3", "Backgrounds.Medium")
+					ThemeMethods.bindTheme(Groupbox.Instance.Header, "TextColor3", "Foregrounds.Medium")
+					ThemeMethods.bindTheme(Groupbox.Instance.Header.Icon, "ImageColor3", "Foregrounds.Medium")
+					ThemeMethods.bindTheme(Groupbox.Instance.PART_Backdrop, "BackgroundColor3", "Backgrounds.Medium")
 					ThemeMethods.bindTheme(
-						Groupbox.LibInstance.PART_Backdrop.Inner,
+						Groupbox.Instance.PART_Backdrop.Inner,
 						"BackgroundColor3",
 						"Backgrounds.Groupbox"
 					)
-					ThemeMethods.bindTheme(Groupbox.LibInstance.PART_Backdrop.UIStroke, "Color", "Miscellaneous.Shadow")
+					ThemeMethods.bindTheme(Groupbox.Instance.PART_Backdrop.UIStroke, "Color", "Miscellaneous.Shadow")
 
 					acrylicEvent.Event:Connect(function()
 						if mainAcrylic then
-							Groupbox.LibInstance.PART_Backdrop.BackgroundTransparency = 0.7
-							Groupbox.LibInstance.PART_Backdrop.Inner.BackgroundTransparency = 0.7
-							Groupbox.LibInstance.PART_Backdrop.UIStroke.Transparency = 0.6
+							Groupbox.Instance.PART_Backdrop.BackgroundTransparency = 0.7
+							Groupbox.Instance.PART_Backdrop.Inner.BackgroundTransparency = 0.7
+							Groupbox.Instance.PART_Backdrop.UIStroke.Transparency = 0.6
 						else
-							Groupbox.LibInstance.PART_Backdrop.BackgroundTransparency = 0
-							Groupbox.LibInstance.PART_Backdrop.Inner.BackgroundTransparency = 0
-							Groupbox.LibInstance.PART_Backdrop.UIStroke.Transparency = 0
+							Groupbox.Instance.PART_Backdrop.BackgroundTransparency = 0
+							Groupbox.Instance.PART_Backdrop.Inner.BackgroundTransparency = 0
+							Groupbox.Instance.PART_Backdrop.UIStroke.Transparency = 0
 						end
 					end)
 				end)
@@ -3864,27 +3864,27 @@ function Starlight:CreateWindow(WindowSettings)
 				-- Now removed due to autosizing actually working
 				--[[
 				if GroupboxSettings.Style == 2 then
-					Groupbox.LibInstance["PART_Content"]:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-						Groupbox.LibInstance["PART_Backdrop"].Size = UDim2.new(1,0,0, Groupbox.LibInstance["PART_Content"].AbsoluteSize.Y)
+					Groupbox.Instance["PART_Content"]:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+						Groupbox.Instance["PART_Backdrop"].Size = UDim2.new(1,0,0, Groupbox.Instance["PART_Content"].AbsoluteSize.Y)
 					end)
 				end
 				]]
 
 				function Groupbox:Set(NewGroupboxSettings)
-					local oldInstance = Groupbox.LibInstance
+					local oldInstance = Groupbox.Instance
 
 					if NewGroupboxSettings.Style == 1 then
-						Groupbox.LibInstance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate["Groupbox_Style1"]:Clone()
-						for i, v in pairs(Groupbox.LibInstance.PartContent:GetChildren()) do
+						Groupbox.Instance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate["Groupbox_Style1"]:Clone()
+						for i, v in pairs(Groupbox.Instance.PartContent:GetChildren()) do
 							if v.ClassName == "Frame" then
 								v:Destroy()
 							end
 						end
 					else
-						Groupbox.LibInstance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate2["Groupbox_Style2"]:Clone()
+						Groupbox.Instance = tabs["Tab_TEMPLATE"].ScrollingCollumnTemplate2["Groupbox_Style2"]:Clone()
 					end
 
-					Groupbox.ParentingItem = Groupbox.LibInstance.PART_Content
+					Groupbox.ParentingItem = Groupbox.Instance.PART_Content
 
 					if GroupboxSettings.Style == 1 then
 						for _, element in pairs(oldInstance:GetChildren()) do
@@ -3903,17 +3903,17 @@ function Starlight:CreateWindow(WindowSettings)
 					end
 					oldInstance:Destroy()
 
-					Groupbox.LibInstance.Header.Text = NewGroupboxSettings.Name
-					Groupbox.LibInstance.Header.Icon.Image = "rbxassetid://" .. NewGroupboxSettings.Icon
-					Groupbox.LibInstance.Name = "GROUPBOX_" .. GroupIndex
-					Groupbox.LibInstance.Parent = Tab.LibInstances.Page["Column_" .. NewGroupboxSettings.Column]
+					Groupbox.Instance.Header.Text = NewGroupboxSettings.Name
+					Groupbox.Instance.Header.Icon.Image = "rbxassetid://" .. NewGroupboxSettings.Icon
+					Groupbox.Instance.Name = "GROUPBOX_" .. GroupIndex
+					Groupbox.Instance.Parent = Tab.Instances.Page["Column_" .. NewGroupboxSettings.Column]
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Values =
 						NewGroupboxSettings
 				end
 
 				function Groupbox:Destroy()
-					Groupbox.LibInstance:Destroy()
+					Groupbox.Instance:Destroy()
 					for _, element in pairs(Groupbox.Elements) do
 						element:Destroy()
 					end
@@ -3943,20 +3943,20 @@ function Starlight:CreateWindow(WindowSettings)
 						Values = ElementSettings
 					}
 
-					Element.LibInstance = GroupboxTemplateInstance["Button_TEMPLATE_Style1"]:Clone()
-					Element.LibInstance.Visible = true
-					Element.LibInstance["PART_Backdrop"].DropShadowHolder.DropShadow.ImageTransparency = 1
-					Element.LibInstance.Parent = Groupbox.ParentingItem
+					Element.Instance = GroupboxTemplateInstance["Button_TEMPLATE_Style1"]:Clone()
+					Element.Instance.Visible = true
+					Element.Instance["PART_Backdrop"].DropShadowHolder.DropShadow.ImageTransparency = 1
+					Element.Instance.Parent = Groupbox.ParentingItem
 
-					Element.LibInstance.Name = "BUTTON_" .. ElementSettings.Name
-					Element.LibInstance["PART_Backdrop"].Header.Text = ElementSettings.Name
-					Element.LibInstance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
-					if Element.LibInstance["PART_Backdrop"].Header.Icon.Visible == false then
-						Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
+					Element.Instance.Name = "BUTTON_" .. ElementSettings.Name
+					Element.Instance["PART_Backdrop"].Header.Text = ElementSettings.Name
+					Element.Instance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
+					if Element.Instance["PART_Backdrop"].Header.Icon.Visible == false then
+						Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
 					else
-						Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
+						Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
 					end
-					Element.LibInstance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+					Element.Instance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
 					function Element:Set(NewElementSettings)
 						for i,v in pairs(ElementSettings) do
@@ -3970,59 +3970,59 @@ function Starlight:CreateWindow(WindowSettings)
 						Element.Values = ElementSettings
 						Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name] = ElementSettings
 
-						Element.LibInstance.Name = "BUTTON_" .. ElementSettings.Name
-						Element.LibInstance["PART_Backdrop"].Header.Text = ElementSettings.Name
-						Element.LibInstance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
-						if Element.LibInstance["PART_Backdrop"].Header.Icon.Visible == false then
-							Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
+						Element.Instance.Name = "BUTTON_" .. ElementSettings.Name
+						Element.Instance["PART_Backdrop"].Header.Text = ElementSettings.Name
+						Element.Instance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
+						if Element.Instance["PART_Backdrop"].Header.Icon.Visible == false then
+							Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
 						else
-							Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
+							Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
 						end
-						Element.LibInstance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+						Element.Instance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 						Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name].Values = ElementSettings
 					end
 
 					function Element:Destroy()
-						Element.LibInstance:Destroy()
+						Element.Instance:Destroy()
 					end
 
-					Element.LibInstance.MouseEnter:Connect(function()
-						Tween(Element.LibInstance["PART_Backdrop"].DropShadowHolder.DropShadow, {ImageTransparency = 0.73})
+					Element.Instance.MouseEnter:Connect(function()
+						Tween(Element.Instance["PART_Backdrop"].DropShadowHolder.DropShadow, {ImageTransparency = 0.73})
 					end)
 
-					Element.LibInstance.MouseLeave:Connect(function()
-						Tween(Element.LibInstance["PART_Backdrop"].DropShadowHolder.DropShadow, {ImageTransparency = 1})
+					Element.Instance.MouseLeave:Connect(function()
+						Tween(Element.Instance["PART_Backdrop"].DropShadowHolder.DropShadow, {ImageTransparency = 1})
 
-						if Element.LibInstance["PART_Backdrop"].AccentBrighter.Enabled == true then
-							Element.LibInstance["PART_Backdrop"].AccentBrighter.Enabled = false
-							Element.LibInstance["PART_Backdrop"].Accent.Enabled = true
+						if Element.Instance["PART_Backdrop"].AccentBrighter.Enabled == true then
+							Element.Instance["PART_Backdrop"].AccentBrighter.Enabled = false
+							Element.Instance["PART_Backdrop"].Accent.Enabled = true
 						end
 					end)
 
-					Element.LibInstance.Interact.MouseButton1Click:Connect(function()
+					Element.Instance.Interact.MouseButton1Click:Connect(function()
 						local Success,Response = pcall(Element.Values.Callback)
 
 						if not Success then
-							Element.LibInstance["PART_Backdrop"].Header.Text = "Callback Error"
+							Element.Instance["PART_Backdrop"].Header.Text = "Callback Error"
 							warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 							print(tostring(Response))
 							wait(0.5)
-							Element.LibInstance["PART_Backdrop"].Header.Text = ElementSettings.Name
+							Element.Instance["PART_Backdrop"].Header.Text = ElementSettings.Name
 						end
 					end)
 
-					Element.LibInstance.Interact.MouseButton1Down:Connect(function()
-						Element.LibInstance["PART_Backdrop"].AccentBrighter.Enabled = true
-						Element.LibInstance["PART_Backdrop"].Accent.Enabled = false
+					Element.Instance.Interact.MouseButton1Down:Connect(function()
+						Element.Instance["PART_Backdrop"].AccentBrighter.Enabled = true
+						Element.Instance["PART_Backdrop"].Accent.Enabled = false
 					end)
 
-					Element.LibInstance.Interact.MouseButton1Up:Connect(function()
-						Element.LibInstance["PART_Backdrop"].AccentBrighter.Enabled = false
-						Element.LibInstance["PART_Backdrop"].Accent.Enabled = true
+					Element.Instance.Interact.MouseButton1Up:Connect(function()
+						Element.Instance["PART_Backdrop"].AccentBrighter.Enabled = false
+						Element.Instance["PART_Backdrop"].Accent.Enabled = true
 					end)
 
 					if GroupboxSettings.Style == 2 then
-						Groupbox.LibInstance["PART_Backdrop"].Size = UDim2.new(1,0,0, Groupbox.LibInstance["PART_Backdrop"].AbsoluteSize.Y)
+						Groupbox.Instance["PART_Backdrop"].Size = UDim2.new(1,0,0, Groupbox.Instance["PART_Backdrop"].AbsoluteSize.Y)
 					end
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name] = Element
@@ -4036,19 +4036,19 @@ function Starlight:CreateWindow(WindowSettings)
 						Values = ElementSettings
 					}
 
-					Element.LibInstance = GroupboxTemplateInstance["Button_TEMPLATE_Style2"]:Clone()
-					Element.LibInstance.Visible = true
-					Element.LibInstance.Parent = Groupbox.ParentingItem
+					Element.Instance = GroupboxTemplateInstance["Button_TEMPLATE_Style2"]:Clone()
+					Element.Instance.Visible = true
+					Element.Instance.Parent = Groupbox.ParentingItem
 
-					Element.LibInstance.Name = "BUTTON_" .. ElementSettings.Name
-					Element.LibInstance["PART_Backdrop"].Header.Text = ElementSettings.Name
-					Element.LibInstance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
-					if Element.LibInstance["PART_Backdrop"].Header.Icon.Visible == false then
-						Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
+					Element.Instance.Name = "BUTTON_" .. ElementSettings.Name
+					Element.Instance["PART_Backdrop"].Header.Text = ElementSettings.Name
+					Element.Instance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
+					if Element.Instance["PART_Backdrop"].Header.Icon.Visible == false then
+						Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
 					else
-						Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
+						Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
 					end
-					Element.LibInstance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+					Element.Instance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
 					function Element:Set(NewElementSettings)
 						for i,v in pairs(ElementSettings) do
@@ -4062,39 +4062,39 @@ function Starlight:CreateWindow(WindowSettings)
 						Element.Values = ElementSettings
 						Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name] = ElementSettings
 
-						Element.LibInstance.Name = "BUTTON_" .. ElementSettings.Name
-						Element.LibInstance["PART_Backdrop"].Header.Text = ElementSettings.Name
-						Element.LibInstance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
-						if Element.LibInstance["PART_Backdrop"].Header.Icon.Visible == false then
-							Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
+						Element.Instance.Name = "BUTTON_" .. ElementSettings.Name
+						Element.Instance["PART_Backdrop"].Header.Text = ElementSettings.Name
+						Element.Instance["PART_Backdrop"].Header.Icon.Visible = ElementSettings.Icon ~= nil
+						if Element.Instance["PART_Backdrop"].Header.Icon.Visible == false then
+							Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,6)
 						else
-							Element.LibInstance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
+							Element.Instance["PART_Backdrop"].Header.UIPadding.PaddingLeft = UDim.new(0,32)
 						end
-						Element.LibInstance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+						Element.Instance["PART_Backdrop"].Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 						Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name].Values = ElementSettings
 					end
 
 					function Element:Destroy()
-						Element.LibInstance:Destroy()
+						Element.Instance:Destroy()
 					end
 
-					Element.LibInstance.MouseEnter:Connect(function()
-						Tween(Element.LibInstance["PART_Backdrop"], {BackgroundColor3 = Color3.fromRGB(31, 33, 38)})
+					Element.Instance.MouseEnter:Connect(function()
+						Tween(Element.Instance["PART_Backdrop"], {BackgroundColor3 = Color3.fromRGB(31, 33, 38)})
 					end)
 
-					Element.LibInstance.MouseLeave:Connect(function()
-						Tween(Element.LibInstance["PART_Backdrop"], {BackgroundColor3 = Color3.fromRGB(27, 29, 34)})
+					Element.Instance.MouseLeave:Connect(function()
+						Tween(Element.Instance["PART_Backdrop"], {BackgroundColor3 = Color3.fromRGB(27, 29, 34)})
 					end)
 
-					Element.LibInstance.Interact.MouseButton1Click:Connect(function()
+					Element.Instance.Interact.MouseButton1Click:Connect(function()
 						local Success,Response = pcall(ElementSettings.Callback)
 
 						if not Success then
-							Element.LibInstance["PART_Backdrop"].Header.Text = "Callback Error"
+							Element.Instance["PART_Backdrop"].Header.Text = "Callback Error"
 							warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 							print(tostring(Response))
 							wait(0.5)
-							Element.LibInstance["PART_Backdrop"].Header.Text = ElementSettings.Name
+							Element.Instance["PART_Backdrop"].Header.Text = ElementSettings.Name
 						end
 					end)
 
@@ -4124,25 +4124,25 @@ function Starlight:CreateWindow(WindowSettings)
 						Values = ElementSettings,
 					}
 
-					Element.LibInstance = GroupboxTemplateInstance.Checkbox_TEMPLATE_Disabled:Clone()
-					Element.LibInstance.Visible = true
-					Element.LibInstance.Parent = Groupbox.ParentingItem
+					Element.Instance = GroupboxTemplateInstance.Checkbox_TEMPLATE_Disabled:Clone()
+					Element.Instance.Visible = true
+					Element.Instance.Parent = Groupbox.ParentingItem
 
-					Element.LibInstance.Name = "CHECKBOX_" .. ElementSettings.Name
-					Element.LibInstance.Header.Text = ElementSettings.Name
-					Element.LibInstance.Header.Icon.Visible = ElementSettings.Icon ~= nil
-					if Element.LibInstance.Header.Icon.Visible == false then
-						Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
+					Element.Instance.Name = "CHECKBOX_" .. ElementSettings.Name
+					Element.Instance.Header.Text = ElementSettings.Name
+					Element.Instance.Header.Icon.Visible = ElementSettings.Icon ~= nil
+					if Element.Instance.Header.Icon.Visible == false then
+						Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
 					else
-						Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
+						Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
 					end
-					Element.LibInstance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+					Element.Instance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
 					local function Set(bool)
 						if bool then
-							Tween(Element.LibInstance.Checkbox, {BackgroundTransparency = 0})
+							Tween(Element.Instance.Checkbox, {BackgroundTransparency = 0})
 						else
-							Tween(Element.LibInstance.Checkbox, {BackgroundTransparency = 0.9})
+							Tween(Element.Instance.Checkbox, {BackgroundTransparency = 0.9})
 						end
 
 						Element.Values.CurrentValue = bool
@@ -4157,26 +4157,26 @@ function Starlight:CreateWindow(WindowSettings)
 							end)
 
 							if not Success then
-								Element.LibInstance.Header.Text = "Callback Error"
+								Element.Instance.Header.Text = "Callback Error"
 								warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 								print(tostring(Response))
 								wait(0.5)
-								Element.LibInstance.Header.Text = ElementSettings.Name
+								Element.Instance.Header.Text = ElementSettings.Name
 							end
 						end
 					end
 
-					Element.LibInstance.Checkbox.MouseEnter:Connect(function()
-						Element.LibInstance.Checkbox.AccentBrighter.Enabled = true
-						Element.LibInstance.Checkbox.Accent.Enabled = false
+					Element.Instance.Checkbox.MouseEnter:Connect(function()
+						Element.Instance.Checkbox.AccentBrighter.Enabled = true
+						Element.Instance.Checkbox.Accent.Enabled = false
 					end)
 
-					Element.LibInstance.Checkbox.MouseLeave:Connect(function()
-						Element.LibInstance.Checkbox.AccentBrighter.Enabled = false
-						Element.LibInstance.Checkbox.Accent.Enabled = true
+					Element.Instance.Checkbox.MouseLeave:Connect(function()
+						Element.Instance.Checkbox.AccentBrighter.Enabled = false
+						Element.Instance.Checkbox.Accent.Enabled = true
 					end)
 
-					Element.LibInstance.Checkbox.Interact.MouseButton1Click:Connect(function()
+					Element.Instance.Checkbox.Interact.MouseButton1Click:Connect(function()
 						Element.Values.CurrentValue = not Element.Values.CurrentValue
 						Set(Element.Values.CurrentValue)
 
@@ -4185,11 +4185,11 @@ function Starlight:CreateWindow(WindowSettings)
 						end)
 
 						if not Success then
-							Element.LibInstance.Header.Text = "Callback Error"
+							Element.Instance.Header.Text = "Callback Error"
 							warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 							print(tostring(Response))
 							wait(0.5)
-							Element.LibInstance.Header.Text = ElementSettings.Name
+							Element.Instance.Header.Text = ElementSettings.Name
 						end
 					end)
 
@@ -4204,21 +4204,21 @@ function Starlight:CreateWindow(WindowSettings)
 
 						Element.Values = ElementSettings
 
-						Element.LibInstance.Name = "CHECKBOX_" .. ElementSettings.Name
-						Element.LibInstance.Header.Text = ElementSettings.Name
-						Element.LibInstance.Header.Icon.Visible = ElementSettings.Icon ~= nil
-						if Element.LibInstance.Header.Icon.Visible == false then
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
+						Element.Instance.Name = "CHECKBOX_" .. ElementSettings.Name
+						Element.Instance.Header.Text = ElementSettings.Name
+						Element.Instance.Header.Icon.Visible = ElementSettings.Icon ~= nil
+						if Element.Instance.Header.Icon.Visible == false then
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
 						else
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
 						end
-						Element.LibInstance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+						Element.Instance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
 						Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name].Values = ElementSettings
 					end
 
 					function Element:Destroy()
-						Element.LibInstance:Destroy()
+						Element.Instance:Destroy()
 					end
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name] = Element
@@ -4247,35 +4247,35 @@ function Starlight:CreateWindow(WindowSettings)
 						Values = ElementSettings,
 					}
 
-					Element.LibInstance = GroupboxTemplateInstance.Switch_TEMPLATE_Disabled:Clone()
-					Element.LibInstance.Visible = true
-					Element.LibInstance.Parent = Groupbox.ParentingItem
+					Element.Instance = GroupboxTemplateInstance.Switch_TEMPLATE_Disabled:Clone()
+					Element.Instance.Visible = true
+					Element.Instance.Parent = Groupbox.ParentingItem
 
-					Element.LibInstance.Name = "SWITCH_" .. ElementSettings.Name
-					Element.LibInstance.Header.Text = ElementSettings.Name
-					Element.LibInstance.Header.Icon.Visible = ElementSettings.Icon ~= nil
-					if Element.LibInstance.Header.Icon.Visible == false then
-						Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
+					Element.Instance.Name = "SWITCH_" .. ElementSettings.Name
+					Element.Instance.Header.Text = ElementSettings.Name
+					Element.Instance.Header.Icon.Visible = ElementSettings.Icon ~= nil
+					if Element.Instance.Header.Icon.Visible == false then
+						Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
 					else
-						Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
+						Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
 					end
-					Element.LibInstance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+					Element.Instance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
 					local function Set(bool)
 						if bool then
-							Tween(Element.LibInstance.Switch, {BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(255,255,255)})
-							Tween(Element.LibInstance.Switch.Knob, {Position = UDim2.new(0,20,.5,0), BackgroundColor3 = Color3.fromRGB(255,255,255), BackgroundTransparency = 0})
-							Tween(Element.LibInstance.Switch.UIStroke, {Color = Color3.fromRGB(255,255,255)})
-							Tween(Element.LibInstance.Switch.DropShadowHolder.DropShadow, {ImageTransparency = 0})
-							Element.LibInstance.Switch.Accent.Enabled = true
-							Element.LibInstance.Switch.UIStroke.Accent.Enabled = true
+							Tween(Element.Instance.Switch, {BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(255,255,255)})
+							Tween(Element.Instance.Switch.Knob, {Position = UDim2.new(0,20,.5,0), BackgroundColor3 = Color3.fromRGB(255,255,255), BackgroundTransparency = 0})
+							Tween(Element.Instance.Switch.UIStroke, {Color = Color3.fromRGB(255,255,255)})
+							Tween(Element.Instance.Switch.DropShadowHolder.DropShadow, {ImageTransparency = 0})
+							Element.Instance.Switch.Accent.Enabled = true
+							Element.Instance.Switch.UIStroke.Accent.Enabled = true
 						else
-							Tween(Element.LibInstance.Switch, {BackgroundTransparency = 1, BackgroundColor3 = Color3.fromRGB(165,165,165)})
-							Tween(Element.LibInstance.Switch.Knob, {Position = UDim2.new(0,0,.5,0), BackgroundColor3 = Color3.fromRGB(165,165,165), BackgroundTransparency = 0.5})
-							Tween(Element.LibInstance.Switch.UIStroke, {Color = Color3.fromRGB(165,165,165)})
-							Tween(Element.LibInstance.Switch.DropShadowHolder.DropShadow, {ImageTransparency = 1})
-							Element.LibInstance.Switch.Accent.Enabled = false
-							Element.LibInstance.Switch.UIStroke.Accent.Enabled = false
+							Tween(Element.Instance.Switch, {BackgroundTransparency = 1, BackgroundColor3 = Color3.fromRGB(165,165,165)})
+							Tween(Element.Instance.Switch.Knob, {Position = UDim2.new(0,0,.5,0), BackgroundColor3 = Color3.fromRGB(165,165,165), BackgroundTransparency = 0.5})
+							Tween(Element.Instance.Switch.UIStroke, {Color = Color3.fromRGB(165,165,165)})
+							Tween(Element.Instance.Switch.DropShadowHolder.DropShadow, {ImageTransparency = 1})
+							Element.Instance.Switch.Accent.Enabled = false
+							Element.Instance.Switch.UIStroke.Accent.Enabled = false
 						end
 
 						Element.Values.CurrentValue = bool
@@ -4290,16 +4290,16 @@ function Starlight:CreateWindow(WindowSettings)
 							end)
 
 							if not Success then
-								Element.LibInstance.Header.Text = "Callback Error"
+								Element.Instance.Header.Text = "Callback Error"
 								warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 								print(tostring(Response))
 								wait(0.5)
-								Element.LibInstance.Header.Text = ElementSettings.Name
+								Element.Instance.Header.Text = ElementSettings.Name
 							end
 						end
 					end
 
-					Element.LibInstance.Switch.Interact.MouseButton1Click:Connect(function()
+					Element.Instance.Switch.Interact.MouseButton1Click:Connect(function()
 						Element.Values.CurrentValue = not Element.Values.CurrentValue
 						Set(Element.Values.CurrentValue)
 
@@ -4308,11 +4308,11 @@ function Starlight:CreateWindow(WindowSettings)
 						end)
 
 						if not Success then
-							Element.LibInstance.Header.Text = "Callback Error"
+							Element.Instance.Header.Text = "Callback Error"
 							warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 							print(tostring(Response))
 							wait(0.5)
-							Element.LibInstance.Header.Text = ElementSettings.Name
+							Element.Instance.Header.Text = ElementSettings.Name
 						end
 					end)
 
@@ -4327,21 +4327,21 @@ function Starlight:CreateWindow(WindowSettings)
 
 						Element.Values = ElementSettings
 
-						Element.LibInstance.Name = "SWITCH_" .. ElementSettings.Name
-						Element.LibInstance.Header.Text = ElementSettings.Name
-						Element.LibInstance.Header.Icon.Visible = ElementSettings.Icon ~= nil
-						if Element.LibInstance.Header.Icon.Visible == false then
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
+						Element.Instance.Name = "SWITCH_" .. ElementSettings.Name
+						Element.Instance.Header.Text = ElementSettings.Name
+						Element.Instance.Header.Icon.Visible = ElementSettings.Icon ~= nil
+						if Element.Instance.Header.Icon.Visible == false then
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
 						else
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
 						end
-						Element.LibInstance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+						Element.Instance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
 						Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name].Values = ElementSettings
 					end
 
 					function Element:Destroy()
-						Element.LibInstance:Destroy()
+						Element.Instance:Destroy()
 					end
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name] = Element
@@ -4377,36 +4377,36 @@ function Starlight:CreateWindow(WindowSettings)
 						State = false
 					}
 
-					Element.LibInstances.Element = GroupboxTemplateInstance.Dropdown_TEMPLATE:Clone()
-					Element.LibInstances.Element.Parent = Groupbox.ParentingItem
-					Element.LibInstances.Element.Visible = true
+					Element.Instances.Element = GroupboxTemplateInstance.Dropdown_TEMPLATE:Clone()
+					Element.Instances.Element.Parent = Groupbox.ParentingItem
+					Element.Instances.Element.Visible = true
 
-					Element.LibInstances.Element.Name = "DROPDOWN_" .. ElementSettings.Name
-					Element.LibInstances.Element.Header.Text = ElementSettings.Name
+					Element.Instances.Element.Name = "DROPDOWN_" .. ElementSettings.Name
+					Element.Instances.Element.Header.Text = ElementSettings.Name
 
 
-					Element.LibInstances.Popup = mainWindow["Popup Overlay"].Dropdown_TEMPLATE:Clone()
-					Element.LibInstances.Popup.Parent = mainWindow["Popup Overlay"]
-					Element.LibInstances.Popup.Header.Text = ElementSettings.Name
+					Element.Instances.Popup = mainWindow["Popup Overlay"].Dropdown_TEMPLATE:Clone()
+					Element.Instances.Popup.Parent = mainWindow["Popup Overlay"]
+					Element.Instances.Popup.Header.Text = ElementSettings.Name
 
 
 					--// Interaction System \\--
-					Element.LibInstances.Element.Icon.MouseButton1Click:Connect(function()
+					Element.Instances.Element.Icon.MouseButton1Click:Connect(function()
 						mainWindow["Popup Overlay"].Visible = true
-						Element.LibInstances.Popup.Visible = true
+						Element.Instances.Popup.Visible = true
 
 						UserInputService.InputBegan:Connect(function(i, g)
 							if g or i.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-							local p, pos, size = i.Position, Element.LibInstances.Popup.AbsolutePosition, Element.LibInstances.Popup.AbsoluteSize
+							local p, pos, size = i.Position, Element.Instances.Popup.AbsolutePosition, Element.Instances.Popup.AbsoluteSize
 							if not (p.X >= pos.X and p.X <= pos.X + size.X and p.Y >= pos.Y and p.Y <= pos.Y + size.Y) then
 								mainWindow["Popup Overlay"].Visible = false
-								Element.LibInstances.Popup.Visible = false
+								Element.Instances.Popup.Visible = false
 							end
 						end)
 					end)
 
 					local function ActivateColorSingle(name)
-						for _, Option in pairs(Element.LibInstances.Popup.Content:GetChildren()) do
+						for _, Option in pairs(Element.Instances.Popup.Content:GetChildren()) do
 							if Option.ClassName == "Frame" and not string.find(Option.Name, "Option_Template") then
 								Tween(Option, {BackgroundTransparency = 1})
 								Tween(Option.Header, {TextColor3 = Color3.fromRGB(100, 100, 100)})
@@ -4416,10 +4416,10 @@ function Starlight:CreateWindow(WindowSettings)
 						end
 
 
-						Tween(Element.LibInstances.Popup.Content[name], {BackgroundTransparency = 0.8})
-						Tween(Element.LibInstances.Popup.Content[name].Header, {TextColor3 = Color3.fromRGB(255,255,255)})
-						Element.LibInstances.Popup.Content[name].Header.Accent.Enabled = true
-						Element.LibInstances.Popup.Content[name].Icon.Accent.Enabled = true
+						Tween(Element.Instances.Popup.Content[name], {BackgroundTransparency = 0.8})
+						Tween(Element.Instances.Popup.Content[name].Header, {TextColor3 = Color3.fromRGB(255,255,255)})
+						Element.Instances.Popup.Content[name].Header.Accent.Enabled = true
+						Element.Instances.Popup.Content[name].Icon.Accent.Enabled = true
 
 					end
 
@@ -4435,7 +4435,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 					local function Refresh()
 						for i,v in pairs(ElementSettings.Options) do
-							local Option = Element.LibInstances.Popup.Content.Option_TEMPLATE:Clone()
+							local Option = Element.Instances.Popup.Content.Option_TEMPLATE:Clone()
 							local OptionHover = false
 
 							Option.Header.Text = v
@@ -4482,7 +4482,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 
 							Option.Visible = true
-							Option.Parent = Element.LibInstances.Popup.Content
+							Option.Parent = Element.Instances.Popup.Content
 
 							Option.Interact.MouseEnter:Connect(function()
 								OptionHover = true
@@ -4525,16 +4525,16 @@ function Starlight:CreateWindow(WindowSettings)
 					if ind == 1 then Selected = ElementSettings.CurrentOption[1] else Selected = ElementSettings.CurrentOption end
 					CB(Selected)
 					if type(Selected) == "string" then 
-						Tween(Element.LibInstances.Popup.Content[Selected], {BackgroundTransparency = 0.8})
-						Tween(Element.LibInstances.Popup.Content[Selected].Header, {TextColor3 = Color3.fromRGB(255,255,255)})
-						Element.LibInstances.Popup.Content[Selected].Header.Accent.Enabled = true
-						Element.LibInstances.Popup.Content[Selected].Icon.Accent.Enabled = true
+						Tween(Element.Instances.Popup.Content[Selected], {BackgroundTransparency = 0.8})
+						Tween(Element.Instances.Popup.Content[Selected].Header, {TextColor3 = Color3.fromRGB(255,255,255)})
+						Element.Instances.Popup.Content[Selected].Header.Accent.Enabled = true
+						Element.Instances.Popup.Content[Selected].Icon.Accent.Enabled = true
 					else
 						for i,v in pairs(Selected) do
-							Tween(Element.LibInstances.Popup.Content[Selected], {BackgroundTransparency = 0.8})
-							Tween(Element.LibInstances.Popup.Content[Selected].Header, {TextColor3 = Color3.fromRGB(255,255,255)})
-							Element.LibInstances.Popup.Content[Selected].Header.Accent.Enabled = true
-							Element.LibInstances.Popup.Content[Selected].Icon.Accent.Enabled = true
+							Tween(Element.Instances.Popup.Content[Selected], {BackgroundTransparency = 0.8})
+							Tween(Element.Instances.Popup.Content[Selected].Header, {TextColor3 = Color3.fromRGB(255,255,255)})
+							Element.Instances.Popup.Content[Selected].Header.Accent.Enabled = true
+							Element.Instances.Popup.Content[Selected].Icon.Accent.Enabled = true
 						end
 					end
 
@@ -4545,7 +4545,7 @@ function Starlight:CreateWindow(WindowSettings)
 					end
 
 					function Element:Destroy()
-						Element.LibInstance:Destroy()
+						Element.Instance:Destroy()
 					end
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name] = Element
@@ -4579,34 +4579,34 @@ function Starlight:CreateWindow(WindowSettings)
 						Values = ElementSettings,
 					}
 
-					Element.LibInstance = GroupboxTemplateInstance.Bind_TEMPLATE:Clone()
-					Element.LibInstance.Visible = true
-					Element.LibInstance.Parent = Groupbox.ParentingItem
+					Element.Instance = GroupboxTemplateInstance.Bind_TEMPLATE:Clone()
+					Element.Instance.Visible = true
+					Element.Instance.Parent = Groupbox.ParentingItem
 
-					Element.LibInstance.Name = "BIND_" .. ElementSettings.Name
-					Element.LibInstance.Header.Text = ElementSettings.Name
-					Element.LibInstance.Header.Icon.Visible = ElementSettings.Icon ~= nil
-					if Element.LibInstance.Header.Icon.Visible == false then
-						Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
+					Element.Instance.Name = "BIND_" .. ElementSettings.Name
+					Element.Instance.Header.Text = ElementSettings.Name
+					Element.Instance.Header.Icon.Visible = ElementSettings.Icon ~= nil
+					if Element.Instance.Header.Icon.Visible == false then
+						Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
 					else
-						Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
+						Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
 					end
-					Element.LibInstance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+					Element.Instance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
 					local CheckingForKey = false
 					local Active = false
 
-					Element.LibInstance.Bind.Text = ElementSettings.CurrentValue
+					Element.Instance.Bind.Text = ElementSettings.CurrentValue
 
-					Element.LibInstance.Bind.Focused:Connect(function()
+					Element.Instance.Bind.Focused:Connect(function()
 						task.wait()
 						CheckingForKey = true
 					end)
 
-					Element.LibInstance.Bind.FocusLost:Connect(function()
+					Element.Instance.Bind.FocusLost:Connect(function()
 						CheckingForKey = false
-						if Element.LibInstance.Bind.Text == (nil or "") then
-							Element.LibInstance.Bind.Text = ElementSettings.CurrentValue
+						if Element.Instance.Bind.Text == (nil or "") then
+							Element.Instance.Bind.Text = ElementSettings.CurrentValue
 						end
 					end)
 
@@ -4618,51 +4618,51 @@ function Starlight:CreateWindow(WindowSettings)
 								if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Enum.KeyCode[Starlight.WindowKeybind] then
 									local SplitMessage = string.split(tostring(input.KeyCode), ".")
 									local NewKeyNoEnum = SplitMessage[3]
-									Element.LibInstance.Bind.Text = tostring(NewKeyNoEnum)
+									Element.Instance.Bind.Text = tostring(NewKeyNoEnum)
 									Element.Values.CurrentValue = tostring(NewKeyNoEnum)
 									local Success,Response = pcall(function()
 										Element.Values.ChangedCallback(Element.Values.CurrentValue)
 									end)
 
 									if not Success then
-										Element.LibInstance.Header.Text = "Callback Error"
+										Element.Instance.Header.Text = "Callback Error"
 										warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 										print(tostring(Response))
 										wait(0.5)
-										Element.LibInstance.Header.Text = ElementSettings.Name
+										Element.Instance.Header.Text = ElementSettings.Name
 									end
-									Element.LibInstance.Bind:ReleaseFocus()
+									Element.Instance.Bind:ReleaseFocus()
 								end
 							else
 								if input.UserInputType == Enum.UserInputType.MouseButton1 then
-									Element.LibInstance.Bind.Text = "MB1"
+									Element.Instance.Bind.Text = "MB1"
 									Element.Values.CurrentValue = "MB1"
-									Element.LibInstance.Bind:ReleaseFocus()
+									Element.Instance.Bind:ReleaseFocus()
 									local Success,Response = pcall(function()
 										Element.Values.ChangedCallback(Element.Values.CurrentValue)
 									end)
 
 									if not Success then
-										Element.LibInstance.Header.Text = "Callback Error"
+										Element.Instance.Header.Text = "Callback Error"
 										warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 										print(tostring(Response))
 										wait(0.5)
-										Element.LibInstance.Header.Text = ElementSettings.Name
+										Element.Instance.Header.Text = ElementSettings.Name
 									end
 								elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-									Element.LibInstance.Bind.Text = "MB2"
+									Element.Instance.Bind.Text = "MB2"
 									Element.Values.CurrentValue = "MB2"
-									Element.LibInstance.Bind:ReleaseFocus()
+									Element.Instance.Bind:ReleaseFocus()
 									local Success,Response = pcall(function()
 										Element.Values.ChangedCallback(Element.Values.CurrentValue)
 									end)
 
 									if not Success then
-										Element.LibInstance.Header.Text = "Callback Error"
+										Element.Instance.Header.Text = "Callback Error"
 										warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 										print(tostring(Response))
 										wait(0.5)
-										Element.LibInstance.Header.Text = ElementSettings.Name
+										Element.Instance.Header.Text = ElementSettings.Name
 									end
 								end
 							end
@@ -4699,11 +4699,11 @@ function Starlight:CreateWindow(WindowSettings)
 								end)
 
 								if not Success then
-									Element.LibInstance.Header.Text = "Callback Error"
+									Element.Instance.Header.Text = "Callback Error"
 									warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 									print(tostring(Response))
 									wait(0.5)
-									Element.LibInstance.Header.Text = ElementSettings.Name
+									Element.Instance.Header.Text = ElementSettings.Name
 								end
 							else
 								wait(0.1)
@@ -4715,11 +4715,11 @@ function Starlight:CreateWindow(WindowSettings)
 											end)
 
 											if not Success then
-												Element.LibInstance.Header.Text = "Callback Error"
+												Element.Instance.Header.Text = "Callback Error"
 												warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 												print(tostring(Response))
 												wait(0.5)
-												Element.LibInstance.Header.Text = ElementSettings.Name
+												Element.Instance.Header.Text = ElementSettings.Name
 											end
 											Loop:Disconnect()
 										else
@@ -4728,11 +4728,11 @@ function Starlight:CreateWindow(WindowSettings)
 											end)
 
 											if not Success then
-												Element.LibInstance.Header.Text = "Callback Error"
+												Element.Instance.Header.Text = "Callback Error"
 												warn("Starlight Interface Suite | "..ElementSettings.Name.." Callback Error")
 												print(tostring(Response))
 												wait(0.5)
-												Element.LibInstance.Header.Text = ElementSettings.Name
+												Element.Instance.Header.Text = ElementSettings.Name
 											end
 										end
 									end)	
@@ -4752,23 +4752,23 @@ function Starlight:CreateWindow(WindowSettings)
 
 						Element.Values = ElementSettings
 
-						Element.LibInstance.Name = "BIND_" .. ElementSettings.Name
-						Element.LibInstance.Header.Text = ElementSettings.Name
-						Element.LibInstance.Header.Icon.Visible = ElementSettings.Icon ~= nil
-						if Element.LibInstance.Header.Icon.Visible == false then
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
+						Element.Instance.Name = "BIND_" .. ElementSettings.Name
+						Element.Instance.Header.Text = ElementSettings.Name
+						Element.Instance.Header.Icon.Visible = ElementSettings.Icon ~= nil
+						if Element.Instance.Header.Icon.Visible == false then
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,6)
 						else
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0,32)
 						end
-						Element.LibInstance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
+						Element.Instance.Header.Icon.Image = ElementSettings.Icon ~= nil and "rbxassetid://" .. Element.Values.Icon or ""
 
-						Element.LibInstance.Bind.Text = ElementSettings.CurrentValue
+						Element.Instance.Bind.Text = ElementSettings.CurrentValue
 
 						Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name].Values = ElementSettings
 					end
 
 					function Element:Destroy()
-						Element.LibInstance:Destroy()
+						Element.Instance:Destroy()
 					end
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ElementSettings.Name] = Element
@@ -4964,7 +4964,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 							tooltips[i] = AddToolTip(Element.Values.Tooltip or "", ElementInstance)
 
-							Element.LibInstance = ElementInstance.Visible and ElementInstance or Element.LibInstance
+							Element.Instance = ElementInstance.Visible and ElementInstance or Element.Instance
 						end
 
 						function Element:Set(NewElementSettings, NewIndex)
@@ -5000,7 +5000,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 								tooltips[i].Text = Element.Values.Tooltip or ""
 
-								Element.LibInstance = ElementInstance.Visible and ElementInstance or Element.LibInstance
+								Element.Instance = ElementInstance.Visible and ElementInstance or Element.Instance
 							end
 
 							Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements["BUTTON_" .. Index].Values =
@@ -5334,7 +5334,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 							ElementInstance.Parent = Groupbox.ParentingItem
 
-							Element.LibInstance = ElementInstance.Visible and ElementInstance or Element.LibInstance
+							Element.Instance = ElementInstance.Visible and ElementInstance or Element.Instance
 						end
 
 						function Element:Set(NewElementSettings, NewIndex)
@@ -5415,19 +5415,19 @@ function Starlight:CreateWindow(WindowSettings)
 
 								tooltips[i].Text = Element.Values.Tooltip or ""
 
-								Element.LibInstance = ElementInstance.Visible and ElementInstance or Element.LibInstance
+								Element.Instance = ElementInstance.Visible and ElementInstance or Element.Instance
 							end
 
 							for i, v in pairs(Element.NestedElements) do
 								if v.Class == "Bind" or v.Class == "ColorPicker" then
 									if v.Class == "Bind" then
-										v.LibInstance.Parent = Element.LibInstance.ElementContainer
+										v.Instance.Parent = Element.Instance.ElementContainer
 										continue
 									end
-									v.LibInstances[1].Parent = Element.LibInstance.ElementContainer
+									v.Instances[1].Parent = Element.Instance.ElementContainer
 									continue
 								end
-								v.LibInstances[1].Parent = Element.LibInstance.DropdownHolder
+								v.Instances[1].Parent = Element.Instance.DropdownHolder
 							end
 
 							Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[Index].Values =
@@ -5476,7 +5476,7 @@ function Starlight:CreateWindow(WindowSettings)
 							NestedElement:Destroy()
 						end
 
-						Inheritor.LibInstance:Destroy()
+						Inheritor.Instance:Destroy()
 						Groupbox.Elements[index] = nil
 						Inheritor = nil
 						return module
@@ -5495,7 +5495,7 @@ function Starlight:CreateWindow(WindowSettings)
 							NestedElement:Destroy()
 						end
 
-						Inheritor.LibInstance:Destroy()
+						Inheritor.Instance:Destroy()
 						Groupbox.Elements[index] = nil
 						Inheritor = nil
 						return module
@@ -5514,7 +5514,7 @@ function Starlight:CreateWindow(WindowSettings)
 							NestedElement:Destroy()
 						end
 
-						Inheritor.LibInstance:Destroy()
+						Inheritor.Instance:Destroy()
 						Groupbox.Elements[index] = nil
 						Inheritor = nil
 						return module
@@ -5530,12 +5530,12 @@ function Starlight:CreateWindow(WindowSettings)
 						Class = "Divider",
 					}
 
-					Divider.LibInstance = GroupboxTemplateInstance.Divider:Clone()
-					Divider.LibInstance.Parent = Groupbox.ParentingItem
-					ThemeMethods.bindTheme(Divider.LibInstance.PART_Line, "BackgroundColor3", "Miscellaneous.Divider")
+					Divider.Instance = GroupboxTemplateInstance.Divider:Clone()
+					Divider.Instance.Parent = Groupbox.ParentingItem
+					ThemeMethods.bindTheme(Divider.Instance.PART_Line, "BackgroundColor3", "Miscellaneous.Divider")
 
 					function Divider:Destroy()
-						Divider.LibInstance:Destroy()
+						Divider.Instance:Destroy()
 					end
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements["Divider_" .. Divider.ID] =
@@ -5581,28 +5581,28 @@ function Starlight:CreateWindow(WindowSettings)
 
 						local tooltip
 
-						Element.LibInstance = GroupboxTemplateInstance.Slider_TEMPLATE:Clone()
-						Element.LibInstance.Visible = true
+						Element.Instance = GroupboxTemplateInstance.Slider_TEMPLATE:Clone()
+						Element.Instance.Visible = true
 
-						Element.LibInstance.Name = "SLIDER_" .. Index
-						Element.LibInstance.Header.Text = Element.Values.Name
-						Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-						if Element.LibInstance.Header.Icon.Visible == false then
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+						Element.Instance.Name = "SLIDER_" .. Index
+						Element.Instance.Header.Text = Element.Values.Name
+						Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+						if Element.Instance.Header.Icon.Visible == false then
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
 						else
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
 						end
-						Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+						Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 								and "rbxassetid://" .. Element.Values.Icon
 							or ""
 
-						tooltip = AddToolTip(Element.Values.Tooltip, Element.LibInstance)
+						tooltip = AddToolTip(Element.Values.Tooltip, Element.Instance)
 
 						local function Set(Value: number)
 							if Value then
 								Element.Values.CurrentValue = Value
 
-								Tween(Element.LibInstance.PART_Backdrop.PART_Progress, {
+								Tween(Element.Instance.PART_Backdrop.PART_Progress, {
 									Size = UDim2.new(
 										(Value - Element.Values.Range[1])
 											/ (Element.Values.Range[2] - Element.Values.Range[1]),
@@ -5611,15 +5611,15 @@ function Starlight:CreateWindow(WindowSettings)
 										0
 									),
 								}, nil, Tween.Info(nil, nil, 0.2))
-								Element.LibInstance.Value.input.Text = tostring(Value)
-								Element.LibInstance.Value.input.CursorPosition = #Element.LibInstance.Value.input.Text + 2
+								Element.Instance.Value.input.Text = tostring(Value)
+								Element.Instance.Value.input.CursorPosition = #Element.Instance.Value.input.Text + 2
 
 								local Success, Response = pcall(function()
 									Element.Values.Callback(Value)
 								end)
 
 								if not Success then
-									Element.LibInstance.Header.Text = "Callback Error"
+									Element.Instance.Header.Text = "Callback Error"
 									warn(`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index})`)
 									print(Response)
 									if WindowSettings.NotifyOnCallbackError then
@@ -5630,12 +5630,12 @@ function Starlight:CreateWindow(WindowSettings)
 										})
 									end
 									wait(0.5)
-									Element.LibInstance.Header.Text = ElementSettings.Name
+									Element.Instance.Header.Text = ElementSettings.Name
 								end
 							end
 						end
 
-						Element.LibInstance.PART_Backdrop.Interact.InputBegan:Connect(function(Input)
+						Element.Instance.PART_Backdrop.Interact.InputBegan:Connect(function(Input)
 							if
 								Input.UserInputType == Enum.UserInputType.MouseButton1
 								or Input.UserInputType == Enum.UserInputType.Touch
@@ -5644,7 +5644,7 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 						end)
 
-						Element.LibInstance.PART_Backdrop.Interact.InputEnded:Connect(function(Input)
+						Element.Instance.PART_Backdrop.Interact.InputEnded:Connect(function(Input)
 							if
 								Input.UserInputType == Enum.UserInputType.MouseButton1
 								or Input.UserInputType == Enum.UserInputType.Touch
@@ -5653,7 +5653,7 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 						end)
 
-						Element.LibInstance.PART_Backdrop.PART_Progress.Knob.Interact.InputBegan:Connect(function(Input)
+						Element.Instance.PART_Backdrop.PART_Progress.Knob.Interact.InputBegan:Connect(function(Input)
 							if
 								Input.UserInputType == Enum.UserInputType.MouseButton1
 								or Input.UserInputType == Enum.UserInputType.Touch
@@ -5662,7 +5662,7 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 						end)
 
-						Element.LibInstance.PART_Backdrop.PART_Progress.Knob.Interact.InputEnded:Connect(function(Input)
+						Element.Instance.PART_Backdrop.PART_Progress.Knob.Interact.InputEnded:Connect(function(Input)
 							if
 								Input.UserInputType == Enum.UserInputType.MouseButton1
 								or Input.UserInputType == Enum.UserInputType.Touch
@@ -5672,8 +5672,8 @@ function Starlight:CreateWindow(WindowSettings)
 						end)
 
 						local dragFunction = function(X)
-							local Current = Element.LibInstance.PART_Backdrop.PART_Progress.AbsolutePosition.X
-								+ Element.LibInstance.PART_Backdrop.PART_Progress.AbsoluteSize.X
+							local Current = Element.Instance.PART_Backdrop.PART_Progress.AbsolutePosition.X
+								+ Element.Instance.PART_Backdrop.PART_Progress.AbsoluteSize.X
 							local Start = Current
 							local Location = X
 							local Loop
@@ -5682,26 +5682,26 @@ function Starlight:CreateWindow(WindowSettings)
 									Location = Mouse.X
 									Current = Current + 0.025 * (Location - Start)
 
-									if Location < Element.LibInstance.PART_Backdrop.AbsolutePosition.X then
-										Location = Element.LibInstance.PART_Backdrop.AbsolutePosition.X
+									if Location < Element.Instance.PART_Backdrop.AbsolutePosition.X then
+										Location = Element.Instance.PART_Backdrop.AbsolutePosition.X
 									elseif
 										Location
-										> Element.LibInstance.PART_Backdrop.AbsolutePosition.X
-											+ Element.LibInstance.PART_Backdrop.AbsoluteSize.X
+										> Element.Instance.PART_Backdrop.AbsolutePosition.X
+											+ Element.Instance.PART_Backdrop.AbsoluteSize.X
 									then
-										Location = Element.LibInstance.PART_Backdrop.AbsolutePosition.X
-											+ Element.LibInstance.PART_Backdrop.AbsoluteSize.X
+										Location = Element.Instance.PART_Backdrop.AbsolutePosition.X
+											+ Element.Instance.PART_Backdrop.AbsoluteSize.X
 									end
 
-									if Current < Element.LibInstance.PART_Backdrop.AbsolutePosition.X then
-										Current = Element.LibInstance.PART_Backdrop.AbsolutePosition.X
+									if Current < Element.Instance.PART_Backdrop.AbsolutePosition.X then
+										Current = Element.Instance.PART_Backdrop.AbsolutePosition.X
 									elseif
 										Current
-										> Element.LibInstance.PART_Backdrop.AbsolutePosition.X
-											+ Element.LibInstance.PART_Backdrop.AbsoluteSize.X
+										> Element.Instance.PART_Backdrop.AbsolutePosition.X
+											+ Element.Instance.PART_Backdrop.AbsoluteSize.X
 									then
-										Current = Element.LibInstance.PART_Backdrop.AbsolutePosition.X
-											+ Element.LibInstance.PART_Backdrop.AbsoluteSize.X
+										Current = Element.Instance.PART_Backdrop.AbsolutePosition.X
+											+ Element.Instance.PART_Backdrop.AbsoluteSize.X
 									end
 
 									if Current <= Location and (Location - Start) < 0 then
@@ -5710,10 +5710,10 @@ function Starlight:CreateWindow(WindowSettings)
 										Start = Location
 									end
 
-									local percentage = (Location - Element.LibInstance.PART_Backdrop.AbsolutePosition.X)
-										/ Element.LibInstance.PART_Backdrop.AbsoluteSize.X
+									local percentage = (Location - Element.Instance.PART_Backdrop.AbsolutePosition.X)
+										/ Element.Instance.PART_Backdrop.AbsoluteSize.X
 									Tween(
-										Element.LibInstance.PART_Backdrop.PART_Progress,
+										Element.Instance.PART_Backdrop.PART_Progress,
 
 										{ Size = UDim2.new(percentage, 0, 1, 0) },
 
@@ -5728,7 +5728,7 @@ function Starlight:CreateWindow(WindowSettings)
 										* (Element.Values.Increment * 10000000)
 										/ 10000000
 
-									Element.LibInstance.Value.input.Text = tostring(NewValue)
+									Element.Instance.Value.input.Text = tostring(NewValue)
 
 									if Element.Values.CurrentValue ~= NewValue then
 										local Success, Response = pcall(function()
@@ -5736,7 +5736,7 @@ function Starlight:CreateWindow(WindowSettings)
 										end)
 
 										if not Success then
-											Element.LibInstance.Header.Text = "Callback Error"
+											Element.Instance.Header.Text = "Callback Error"
 											warn(
 												`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index})`
 											)
@@ -5749,7 +5749,7 @@ function Starlight:CreateWindow(WindowSettings)
 												})
 											end
 											wait(0.5)
-											Element.LibInstance.Header.Text = ElementSettings.Name
+											Element.Instance.Header.Text = ElementSettings.Name
 										end
 
 										Element.Values.CurrentValue = NewValue
@@ -5760,24 +5760,24 @@ function Starlight:CreateWindow(WindowSettings)
 							end)
 						end
 
-						Element.LibInstance.PART_Backdrop.Interact.MouseButton1Down:Connect(function(X)
+						Element.Instance.PART_Backdrop.Interact.MouseButton1Down:Connect(function(X)
 							dragFunction(X)
 						end)
-						Element.LibInstance.PART_Backdrop.PART_Progress.Knob.Interact.MouseButton1Down:Connect(function(X)
+						Element.Instance.PART_Backdrop.PART_Progress.Knob.Interact.MouseButton1Down:Connect(function(X)
 							dragFunction(X)
 						end)
 
-						Element.LibInstance.PART_Backdrop.PART_Progress:GetPropertyChangedSignal("Size"):Connect(function()
-							if Element.LibInstance.PART_Backdrop.PART_Progress.AbsoluteSize.X <= 0 then
-								Element.LibInstance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow.Size =
+						Element.Instance.PART_Backdrop.PART_Progress:GetPropertyChangedSignal("Size"):Connect(function()
+							if Element.Instance.PART_Backdrop.PART_Progress.AbsoluteSize.X <= 0 then
+								Element.Instance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow.Size =
 									UDim2.new(1, 0, 1, 0)
 								return
 							end
-							Element.LibInstance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow.Size =
+							Element.Instance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow.Size =
 								UDim2.new(1, 22, 1, 22)
 						end)
 
-						local input = Element.LibInstance.Value.input
+						local input = Element.Instance.Value.input
 						local updating = false
 						local lastValid = input.Text or ""
 
@@ -5863,73 +5863,73 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 						end)
 
-						Element.LibInstance.Value.input.FocusLost:Connect(function()
+						Element.Instance.Value.input.FocusLost:Connect(function()
 							if
-								Element.LibInstance.Value.input.Text == ""
-								or Element.LibInstance.Value.input.Text == "."
-								or Element.LibInstance.Value.input.Text == "0."
+								Element.Instance.Value.input.Text == ""
+								or Element.Instance.Value.input.Text == "."
+								or Element.Instance.Value.input.Text == "0."
 							then
 								Set(Element.Values.CurrentValue)
 								--task.wait()
-								Element.LibInstance.Value.input:ReleaseFocus()
+								Element.Instance.Value.input:ReleaseFocus()
 							end
 						end)
 
-						Element.LibInstance.MouseEnter:Connect(function()
+						Element.Instance.MouseEnter:Connect(function()
 							Tween(
-								Element.LibInstance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow,
+								Element.Instance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow,
 								{ ImageTransparency = 0.1 }
 							)
 							Tween(
-								Element.LibInstance.PART_Backdrop.PART_Progress.Knob.DropShadowHolder.DropShadow,
+								Element.Instance.PART_Backdrop.PART_Progress.Knob.DropShadowHolder.DropShadow,
 								{ ImageTransparency = 0, ImageColor3 = Color3.new(1, 1, 1) }
 							)
 						end)
-						Element.LibInstance.MouseLeave:Connect(function()
+						Element.Instance.MouseLeave:Connect(function()
 							Tween(
-								Element.LibInstance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow,
+								Element.Instance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow,
 								{ ImageTransparency = 0.9 }
 							)
 							Tween(
-								Element.LibInstance.PART_Backdrop.PART_Progress.Knob.DropShadowHolder.DropShadow,
+								Element.Instance.PART_Backdrop.PART_Progress.Knob.DropShadowHolder.DropShadow,
 								{ ImageTransparency = 0.5, ImageColor3 = Color3.new(0, 0, 0) }
 							)
 						end)
 
 						Set(Element.Values.CurrentValue)
-						Element.LibInstance.Value.max.Text = (
+						Element.Instance.Value.max.Text = (
 							not Element.Values.HideMax and `/{Element.Values.Range[2]}` or ""
 						) .. `{Element.Values.Suffix}`
 
-						ThemeMethods.bindTheme(Element.LibInstance.Header, "TextColor3", "Foregrounds.Light")
-						ThemeMethods.bindTheme(Element.LibInstance.Header.Icon, "ImageColor3", "Foregrounds.Light")
-						ThemeMethods.bindTheme(Element.LibInstance.Value.max, "TextColor3", "Foregrounds.Medium")
-						ThemeMethods.bindTheme(Element.LibInstance.Value.input, "TextColor3", "Foregrounds.Light")
-						ThemeMethods.bindTheme(Element.LibInstance.PART_Backdrop, "BackgroundColor3", "Backgrounds.Dark")
-						ThemeMethods.bindTheme(Element.LibInstance.PART_Backdrop.UIStroke, "Color", "Foregrounds.Dark")
+						ThemeMethods.bindTheme(Element.Instance.Header, "TextColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.Header.Icon, "ImageColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.Value.max, "TextColor3", "Foregrounds.Medium")
+						ThemeMethods.bindTheme(Element.Instance.Value.input, "TextColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.PART_Backdrop, "BackgroundColor3", "Backgrounds.Dark")
+						ThemeMethods.bindTheme(Element.Instance.PART_Backdrop.UIStroke, "Color", "Foregrounds.Dark")
 						ThemeMethods.bindTheme(
-							Element.LibInstance.PART_Backdrop.PART_Progress.Accent,
+							Element.Instance.PART_Backdrop.PART_Progress.Accent,
 							"Color",
 							"Accents.Main"
 						)
 						ThemeMethods.bindTheme(
-							Element.LibInstance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow.Accent,
+							Element.Instance.PART_Backdrop.PART_Progress.DropShadowHolder.DropShadow.Accent,
 							"Color",
 							"Accents.Main"
 						)
 						ThemeMethods.bindTheme(
-							Element.LibInstance.PART_Backdrop.PART_Progress.Knob,
+							Element.Instance.PART_Backdrop.PART_Progress.Knob,
 							"BackgroundColor3",
 							"Foregrounds.Light"
 						)
 						ThemeMethods.bindTheme(
-							Element.LibInstance.PART_Backdrop.PART_Progress.Knob.DropShadowHolder.DropShadow,
+							Element.Instance.PART_Backdrop.PART_Progress.Knob.DropShadowHolder.DropShadow,
 							"ImageColor3",
 							"Foregrounds.Light"
 						)
 
 						function Element:Destroy()
-							Element.LibInstance:Destroy()
+							Element.Instance:Destroy()
 							if Element.NestedElements ~= nil then
 								for _, nestedElement in pairs(Element.NestedElements) do
 									nestedElement:Destroy()
@@ -5951,22 +5951,22 @@ function Starlight:CreateWindow(WindowSettings)
 							Index = NewIndex
 							Element.Values = ElementSettings
 
-							Element.LibInstance.Name = "SLIDER_" .. Index
-							Element.LibInstance.Header.Text = Element.Values.Name
-							Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-							if Element.LibInstance.Header.Icon.Visible == false then
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+							Element.Instance.Name = "SLIDER_" .. Index
+							Element.Instance.Header.Text = Element.Values.Name
+							Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+							if Element.Instance.Header.Icon.Visible == false then
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
 							else
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
 							end
-							Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+							Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 									and "rbxassetid://" .. Element.Values.Icon
 								or ""
 
 							tooltip.Text = Element.Values.Tooltip or tooltip.Text
 
 							Set(Element.Values.CurrentValue)
-							Element.LibInstance.Value.max.Text = (
+							Element.Instance.Value.max.Text = (
 								not Element.Values.HideMax and `/{Element.Values.Range[2]}` or ""
 							) .. `{Element.Values.Suffix}`
 
@@ -5975,17 +5975,17 @@ function Starlight:CreateWindow(WindowSettings)
 						end
 
 						function Element:Lock(Reason)
-							Element.LibInstance.Lock_Overlay.Visible = true
-							Element.LibInstance.Interactable = false
-							Element.LibInstance.Lock_Overlay.Header.Text = Reason or ""
+							Element.Instance.Lock_Overlay.Visible = true
+							Element.Instance.Interactable = false
+							Element.Instance.Lock_Overlay.Header.Text = Reason or ""
 						end
 
 						function Element:Unlock()
-							Element.LibInstance.Lock_Overlay.Visible = false
-							Element.LibInstance.Interactable = true
-							Element.LibInstance.Lock_Overlay.Header.Text = ""
+							Element.Instance.Lock_Overlay.Visible = false
+							Element.Instance.Interactable = true
+							Element.Instance.Lock_Overlay.Header.Text = ""
 						end
-						Element.LibInstance.Parent = Groupbox.ParentingItem
+						Element.Instance.Parent = Groupbox.ParentingItem
 					end)
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[Index] = Element
@@ -6029,17 +6029,17 @@ function Starlight:CreateWindow(WindowSettings)
 					task.spawn(function()
 						local tooltip
 
-						Element.LibInstance = GroupboxTemplateInstance.Input_TEMPLATE:Clone()
-						Element.LibInstance.Visible = true
+						Element.Instance = GroupboxTemplateInstance.Input_TEMPLATE:Clone()
+						Element.Instance.Visible = true
 
-						Element.LibInstance.PART_Backdrop.PART_Input.FocusLost:Connect(function(Enter)
+						Element.Instance.PART_Backdrop.PART_Input.FocusLost:Connect(function(Enter)
 							if Element.Values.Enter then
 								local Success, Response = pcall(function()
 									Element.Values.Callback(Element.Values.CurrentValue)
 								end)
 
 								if not Success then
-									Element.LibInstance.Header.Text = "Callback Error"
+									Element.Instance.Header.Text = "Callback Error"
 									warn(`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index})`)
 									print(Response)
 									if WindowSettings.NotifyOnCallbackError then
@@ -6050,67 +6050,67 @@ function Starlight:CreateWindow(WindowSettings)
 										})
 									end
 									wait(0.5)
-									Element.LibInstance.Header.Text = ElementSettings.Name
+									Element.Instance.Header.Text = ElementSettings.Name
 								end
 							end
 
 							if Element.Values.RemoveTextAfterFocusLost then
-								Element.LibInstance.PART_Backdrop.PART_Input.Text = ""
+								Element.Instance.PART_Backdrop.PART_Input.Text = ""
 								Element.Values.CurrentValue = ""
 							end
 						end)
 
-						Element.LibInstance.PART_Backdrop.Interact.Focused:Connect(function()
-							Element.LibInstance.PART_Backdrop.Interact:ReleaseFocus()
-							Element.LibInstance.PART_Backdrop.PART_Input:CaptureFocus()
+						Element.Instance.PART_Backdrop.Interact.Focused:Connect(function()
+							Element.Instance.PART_Backdrop.Interact:ReleaseFocus()
+							Element.Instance.PART_Backdrop.PART_Input:CaptureFocus()
 						end)
 
-						Element.LibInstance.MouseEnter:Connect(function()
+						Element.Instance.MouseEnter:Connect(function()
 							Tween(
-								Element.LibInstance.PART_Backdrop.UIStroke,
+								Element.Instance.PART_Backdrop.UIStroke,
 								{ Color = Starlight.CurrentTheme.Foregrounds.DarkHover }
 							)
 						end)
-						Element.LibInstance.MouseLeave:Connect(function()
+						Element.Instance.MouseLeave:Connect(function()
 							Tween(
-								Element.LibInstance.PART_Backdrop.UIStroke,
+								Element.Instance.PART_Backdrop.UIStroke,
 								{ Color = Starlight.CurrentTheme.Foregrounds.Dark }
 							)
 						end)
 
 						if Element.Values.Numeric then
-							Element.LibInstance.PART_Backdrop.PART_Input
+							Element.Instance.PART_Backdrop.PART_Input
 								:GetPropertyChangedSignal("Text")
 								:Connect(function()
-									local text = Element.LibInstance.PART_Backdrop.PART_Input.Text
+									local text = Element.Instance.PART_Backdrop.PART_Input.Text
 									if not tonumber(text) and text ~= "." then
-										Element.LibInstance.PART_Backdrop.PART_Input.Text = text:match("[0-9.]*") or ""
+										Element.Instance.PART_Backdrop.PART_Input.Text = text:match("[0-9.]*") or ""
 									end
 								end)
 						end
 
-						Element.LibInstance.PART_Backdrop.PART_Input:GetPropertyChangedSignal("Text"):Connect(function()
+						Element.Instance.PART_Backdrop.PART_Input:GetPropertyChangedSignal("Text"):Connect(function()
 							if Element.Values.MaxCharacters < 0 then
 								if
-									(#Element.LibInstance.PART_Backdrop.PART_Input.Text - 1)
+									(#Element.Instance.PART_Backdrop.PART_Input.Text - 1)
 									== Element.Values.MaxCharacters
 								then
-									Element.LibInstance.PART_Backdrop.PART_Input.Text =
-										Element.LibInstance.PART_Backdrop.PART_Input.Text:sub(
+									Element.Instance.PART_Backdrop.PART_Input.Text =
+										Element.Instance.PART_Backdrop.PART_Input.Text:sub(
 											1,
 											Element.Values.MaxCharacters
 										)
 								end
 							end
 
-							Element.Values.CurrentValue = Element.LibInstance.PART_Backdrop.PART_Input.Text
+							Element.Values.CurrentValue = Element.Instance.PART_Backdrop.PART_Input.Text
 							if not Element.Values.Enter then
 								local Success, Response = pcall(function()
 									Element.Values.Callback(Element.Values.CurrentValue)
 								end)
 
 								if not Success then
-									Element.LibInstance.Header.Text = "Callback Error"
+									Element.Instance.Header.Text = "Callback Error"
 									warn(`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index})`)
 									print(Response)
 									if WindowSettings.NotifyOnCallbackError then
@@ -6121,65 +6121,65 @@ function Starlight:CreateWindow(WindowSettings)
 										})
 									end
 									wait(0.5)
-									Element.LibInstance.Header.Text = ElementSettings.Name
+									Element.Instance.Header.Text = ElementSettings.Name
 								end
 							end
 
 							Tween(
-								Element.LibInstance.PART_Backdrop.PART_Input,
-								{ Size = UDim2.new(0, Element.LibInstance.PART_Backdrop.PART_Input.TextBounds.X, 1, 0) }
+								Element.Instance.PART_Backdrop.PART_Input,
+								{ Size = UDim2.new(0, Element.Instance.PART_Backdrop.PART_Input.TextBounds.X, 1, 0) }
 							)
-							Tween(Element.LibInstance.PART_Backdrop, {
+							Tween(Element.Instance.PART_Backdrop, {
 								Size = UDim2.new(
 									0,
-									Element.LibInstance.PART_Backdrop.PART_Input.TextBounds.X + 30,
+									Element.Instance.PART_Backdrop.PART_Input.TextBounds.X + 30,
 									0,
-									Element.LibInstance.PART_Backdrop.Size.Y.Offset
+									Element.Instance.PART_Backdrop.Size.Y.Offset
 								),
 							})
 						end)
 
-						Element.LibInstance.Name = "INPUT_" .. Index
-						Element.LibInstance.Header.Text = Element.Values.Name
-						Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-						if Element.LibInstance.Header.Icon.Visible == false then
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+						Element.Instance.Name = "INPUT_" .. Index
+						Element.Instance.Header.Text = Element.Values.Name
+						Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+						if Element.Instance.Header.Icon.Visible == false then
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
 						else
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
 						end
-						Element.LibInstance.PART_Backdrop.PART_Input.ClearTextOnFocus = Element.Values.RemoveTextOnFocus
-						Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+						Element.Instance.PART_Backdrop.PART_Input.ClearTextOnFocus = Element.Values.RemoveTextOnFocus
+						Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 								and "rbxassetid://" .. Element.Values.Icon
 							or ""
 						task.delay(0.2, function()
-							Element.LibInstance.PART_Backdrop.PART_Input.PlaceholderText = Element.Values.PlaceholderText
-							Element.LibInstance.PART_Backdrop.PART_Input.Text = Element.Values.CurrentValue
-							Element.LibInstance.PART_Backdrop.PART_Input.Size =
-								UDim2.new(0, Element.LibInstance.PART_Backdrop.PART_Input.TextBounds.X, 1, 0)
-							Element.LibInstance.PART_Backdrop.Size = UDim2.new(
+							Element.Instance.PART_Backdrop.PART_Input.PlaceholderText = Element.Values.PlaceholderText
+							Element.Instance.PART_Backdrop.PART_Input.Text = Element.Values.CurrentValue
+							Element.Instance.PART_Backdrop.PART_Input.Size =
+								UDim2.new(0, Element.Instance.PART_Backdrop.PART_Input.TextBounds.X, 1, 0)
+							Element.Instance.PART_Backdrop.Size = UDim2.new(
 								0,
-								Element.LibInstance.PART_Backdrop.PART_Input.TextBounds.X + 30,
+								Element.Instance.PART_Backdrop.PART_Input.TextBounds.X + 30,
 								0,
-								Element.LibInstance.PART_Backdrop.Size.Y.Offset
+								Element.Instance.PART_Backdrop.Size.Y.Offset
 							)
 						end)
 
-						ThemeMethods.bindTheme(Element.LibInstance.Header, "TextColor3", "Foregrounds.Light")
-						ThemeMethods.bindTheme(Element.LibInstance.Header.Icon, "ImageColor3", "Foregrounds.Light")
-						ThemeMethods.bindTheme(Element.LibInstance.PART_Backdrop, "BackgroundColor3", "Backgrounds.Dark")
-						ThemeMethods.bindTheme(Element.LibInstance.PART_Backdrop.UIStroke, "Color", "Foregrounds.Dark")
+						ThemeMethods.bindTheme(Element.Instance.Header, "TextColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.Header.Icon, "ImageColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.PART_Backdrop, "BackgroundColor3", "Backgrounds.Dark")
+						ThemeMethods.bindTheme(Element.Instance.PART_Backdrop.UIStroke, "Color", "Foregrounds.Dark")
 						ThemeMethods.bindTheme(
-							Element.LibInstance.PART_Backdrop.PART_Input,
+							Element.Instance.PART_Backdrop.PART_Input,
 							"PlaceholderColor3",
 							"Foregrounds.Medium"
 						)
 						ThemeMethods.bindTheme(
-							Element.LibInstance.PART_Backdrop.PART_Input,
+							Element.Instance.PART_Backdrop.PART_Input,
 							"TextColor3",
 							"Foregrounds.Light"
 						)
 
-						tooltip = AddToolTip(Element.Values.Tooltip, Element.LibInstance)
+						tooltip = AddToolTip(Element.Values.Tooltip, Element.Instance)
 
 						function Element:Set(NewElementSettings, NewIndex)
 							NewIndex = NewIndex or Index
@@ -6194,29 +6194,29 @@ function Starlight:CreateWindow(WindowSettings)
 
 							Element.Values = ElementSettings
 
-							Element.LibInstance.Name = "INPUT_" .. NewIndex
-							Element.LibInstance.Header.Text = Element.Values.Name
-							Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-							if Element.LibInstance.Header.Icon.Visible == false then
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+							Element.Instance.Name = "INPUT_" .. NewIndex
+							Element.Instance.Header.Text = Element.Values.Name
+							Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+							if Element.Instance.Header.Icon.Visible == false then
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
 							else
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
 							end
-							Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+							Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 									and "rbxassetid://" .. Element.Values.Icon
 								or ""
-							Element.LibInstance.PART_Backdrop.PART_Input.PlaceholderText = Element.Values.PlaceholderText
-							Element.LibInstance.PART_Backdrop.PART_Input.Text = Element.Values.CurrentValue
+							Element.Instance.PART_Backdrop.PART_Input.PlaceholderText = Element.Values.PlaceholderText
+							Element.Instance.PART_Backdrop.PART_Input.Text = Element.Values.CurrentValue
 							Tween(
-								Element.LibInstance.PART_Backdrop.PART_Input,
-								{ Size = UDim2.new(0, Element.LibInstance.PART_Backdrop.PART_Input.TextBounds.X, 1, 0) }
+								Element.Instance.PART_Backdrop.PART_Input,
+								{ Size = UDim2.new(0, Element.Instance.PART_Backdrop.PART_Input.TextBounds.X, 1, 0) }
 							)
-							Tween(Element.LibInstance.PART_Backdrop, {
+							Tween(Element.Instance.PART_Backdrop, {
 								Size = UDim2.new(
 									0,
-									Element.LibInstance.PART_Backdrop.PART_Input.TextBounds.X + 30,
+									Element.Instance.PART_Backdrop.PART_Input.TextBounds.X + 30,
 									0,
-									Element.LibInstance.PART_Backdrop.Size.Y.Offset
+									Element.Instance.PART_Backdrop.Size.Y.Offset
 								),
 							})
 							local Success, Response = pcall(function()
@@ -6224,7 +6224,7 @@ function Starlight:CreateWindow(WindowSettings)
 							end)
 
 							if not Success then
-								Element.LibInstance.Header.Text = "Callback Error"
+								Element.Instance.Header.Text = "Callback Error"
 								warn(`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index})`)
 								print(Response)
 								if WindowSettings.NotifyOnCallbackError then
@@ -6235,7 +6235,7 @@ function Starlight:CreateWindow(WindowSettings)
 									})
 								end
 								wait(0.5)
-								Element.LibInstance.Header.Text = ElementSettings.Name
+								Element.Instance.Header.Text = ElementSettings.Name
 							end
 
 							tooltip.Text = Element.Values.Tooltip or ""
@@ -6245,7 +6245,7 @@ function Starlight:CreateWindow(WindowSettings)
 						end
 
 						function Element:Destroy()
-							Element.LibInstance:Destroy()
+							Element.Instance:Destroy()
 							if Element.NestedElements ~= nil then
 								for _, nestedElement in pairs(Element.NestedElements) do
 									nestedElement:Destroy()
@@ -6255,18 +6255,18 @@ function Starlight:CreateWindow(WindowSettings)
 						end
 
 						function Element:Lock(Reason)
-							Element.LibInstance.Lock_Overlay.Visible = true
-							Element.LibInstance.Interactable = false
-							Element.LibInstance.Lock_Overlay.Header.Text = Reason or ""
+							Element.Instance.Lock_Overlay.Visible = true
+							Element.Instance.Interactable = false
+							Element.Instance.Lock_Overlay.Header.Text = Reason or ""
 						end
 
 						function Element:Unlock()
-							Element.LibInstance.Lock_Overlay.Visible = false
-							Element.LibInstance.Interactable = true
-							Element.LibInstance.Lock_Overlay.Header.Text = ""
+							Element.Instance.Lock_Overlay.Visible = false
+							Element.Instance.Interactable = true
+							Element.Instance.Lock_Overlay.Header.Text = ""
 						end
 					end)
-					Element.LibInstance.Parent = Groupbox.ParentingItem
+					Element.Instance.Parent = Groupbox.ParentingItem
 
 					Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[Index] = Element
 					return Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[Index]
@@ -6289,26 +6289,26 @@ function Starlight:CreateWindow(WindowSettings)
 					task.spawn(function()
 						local tooltip
 
-						Element.LibInstance = GroupboxTemplateInstance.Label_TEMPLATE:Clone()
-						Element.LibInstance.Visible = true
-						Element.LibInstance.Parent = Groupbox.ParentingItem
+						Element.Instance = GroupboxTemplateInstance.Label_TEMPLATE:Clone()
+						Element.Instance.Visible = true
+						Element.Instance.Parent = Groupbox.ParentingItem
 
-						Element.LibInstance.Name = "LABEL_" .. Index
-						Element.LibInstance.Header.Text = Element.Values.Name
-						Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-						if Element.LibInstance.Header.Icon.Visible == false then
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+						Element.Instance.Name = "LABEL_" .. Index
+						Element.Instance.Header.Text = Element.Values.Name
+						Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+						if Element.Instance.Header.Icon.Visible == false then
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
 						else
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
 						end
-						Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+						Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 								and "rbxassetid://" .. Element.Values.Icon
 							or ""
 
-						ThemeMethods.bindTheme(Element.LibInstance.Header, "TextColor3", "Foregrounds.Light")
-						ThemeMethods.bindTheme(Element.LibInstance.Header.Icon, "ImageColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.Header, "TextColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.Header.Icon, "ImageColor3", "Foregrounds.Light")
 
-						tooltip = AddToolTip(Element.Values.Tooltip, Element.LibInstance)
+						tooltip = AddToolTip(Element.Values.Tooltip, Element.Instance)
 
 						function Element:Set(NewElementSettings, NewIndex)
 							NewIndex = NewIndex or Index
@@ -6324,15 +6324,15 @@ function Starlight:CreateWindow(WindowSettings)
 
 							Element.Values = ElementSettings
 
-							Element.LibInstance.Name = "LABEL_" .. NewIndex
-							Element.LibInstance.Header.Text = Element.Values.Name
-							Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-							if Element.LibInstance.Header.Icon.Visible == false then
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+							Element.Instance.Name = "LABEL_" .. NewIndex
+							Element.Instance.Header.Text = Element.Values.Name
+							Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+							if Element.Instance.Header.Icon.Visible == false then
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
 							else
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
 							end
-							Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+							Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 									and "rbxassetid://" .. Element.Values.Icon
 								or ""
 
@@ -6343,7 +6343,7 @@ function Starlight:CreateWindow(WindowSettings)
 						end
 
 						function Element:Destroy()
-							Element.LibInstance:Destroy()
+							Element.Instance:Destroy()
 							if Element.NestedElements ~= nil then
 								for _, nestedElement in pairs(Element.NestedElements) do
 									nestedElement:Destroy()
@@ -6353,15 +6353,15 @@ function Starlight:CreateWindow(WindowSettings)
 						end
 
 						function Element:Lock(Reason)
-							Element.LibInstance.Lock_Overlay.Visible = true
-							Element.LibInstance.Interactable = false
-							Element.LibInstance.Lock_Overlay.Header.Text = Reason or ""
+							Element.Instance.Lock_Overlay.Visible = true
+							Element.Instance.Interactable = false
+							Element.Instance.Lock_Overlay.Header.Text = Reason or ""
 						end
 
 						function Element:Unlock()
-							Element.LibInstance.Lock_Overlay.Visible = false
-							Element.LibInstance.Interactable = true
-							Element.LibInstance.Lock_Overlay.Header.Text = ""
+							Element.Instance.Lock_Overlay.Visible = false
+							Element.Instance.Interactable = true
+							Element.Instance.Lock_Overlay.Header.Text = ""
 						end
 					end)
 
@@ -6427,34 +6427,34 @@ function Starlight:CreateWindow(WindowSettings)
 
 							--
 
-							NestedElement.LibInstance = Element.LibInstance.ElementContainer.Bind:Clone()
-							NestedElement.LibInstance.Visible = true
-							NestedElement.LibInstance.Parent = Parent.LibInstance.ElementContainer
-							Parent.LibInstance.Header.Size =
-								UDim2.fromOffset(Parent.LibInstance.Header.Size.X.Offset - 26, 20)
+							NestedElement.Instance = Element.Instance.ElementContainer.Bind:Clone()
+							NestedElement.Instance.Visible = true
+							NestedElement.Instance.Parent = Parent.Instance.ElementContainer
+							Parent.Instance.Header.Size =
+								UDim2.fromOffset(Parent.Instance.Header.Size.X.Offset - 26, 20)
 
-							NestedElement.LibInstance.Name = "BIND_" .. NestedIndex
+							NestedElement.Instance.Name = "BIND_" .. NestedIndex
 
 							local CheckingForKey = false
 
-							NestedElement.LibInstance:GetPropertyChangedSignal("Text"):Connect(function()
+							NestedElement.Instance:GetPropertyChangedSignal("Text"):Connect(function()
 								--task.wait()
 
-								if NestedElement.LibInstance.ContentText == "" then
+								if NestedElement.Instance.ContentText == "" then
 									Tween(
-										NestedElement.LibInstance,
-										{ Size = UDim2.new(0, NestedElement.LibInstance.TextBounds.X + 30, 0, 22) }
+										NestedElement.Instance,
+										{ Size = UDim2.new(0, NestedElement.Instance.TextBounds.X + 30, 0, 22) }
 									)
 								else
 									Tween(
-										NestedElement.LibInstance,
-										{ Size = UDim2.new(0, NestedElement.LibInstance.TextBounds.X + 14, 0, 22) }
+										NestedElement.Instance,
+										{ Size = UDim2.new(0, NestedElement.Instance.TextBounds.X + 14, 0, 22) }
 									)
 								end
 							end)
 
 							task.delay(0.2, function()
-								NestedElement.LibInstance.Text = NestedElement.Values.CurrentValue == "No Bind"
+								NestedElement.Instance.Text = NestedElement.Values.CurrentValue == "No Bind"
 										and '<font color="rgb(' .. tostring(
 											math.floor(Starlight.CurrentTheme.Foregrounds.Medium.R * 255 + 0.5)
 										) .. "," .. tostring(
@@ -6465,30 +6465,30 @@ function Starlight:CreateWindow(WindowSettings)
 									or NestedElement.Values.CurrentValue
 							end)
 
-							NestedElement.LibInstance.Focused:Connect(function()
+							NestedElement.Instance.Focused:Connect(function()
 								task.wait()
 								CheckingForKey = true
 							end)
 
-							NestedElement.LibInstance.MouseEnter:Connect(function()
+							NestedElement.Instance.MouseEnter:Connect(function()
 								Tween(
-									NestedElement.LibInstance.UIStroke,
+									NestedElement.Instance.UIStroke,
 									{ Color = Starlight.CurrentTheme.Foregrounds.DarkHover }
 								)
 							end)
-							NestedElement.LibInstance.MouseLeave:Connect(function()
+							NestedElement.Instance.MouseLeave:Connect(function()
 								Tween(
-									NestedElement.LibInstance.UIStroke,
+									NestedElement.Instance.UIStroke,
 									{ Color = Starlight.CurrentTheme.Foregrounds.Dark }
 								)
 							end)
 
-							NestedElement.LibInstance.FocusLost:Connect(function(enter)
+							NestedElement.Instance.FocusLost:Connect(function(enter)
 								if not enter then
 									CheckingForKey = false
-									if String.IsEmptyOrNull(NestedElement.LibInstance.Text) then
+									if String.IsEmptyOrNull(NestedElement.Instance.Text) then
 										NestedElement.Values.CurrentValue = "No Bind"
-										NestedElement.LibInstance.Text = '<font color="rgb('
+										NestedElement.Instance.Text = '<font color="rgb('
 											.. tostring(
 												math.floor(Starlight.CurrentTheme.Foregrounds.Medium.R * 255 + 0.5)
 											)
@@ -6512,7 +6512,7 @@ function Starlight:CreateWindow(WindowSettings)
 											if input.KeyCode ~= Enum.KeyCode.Unknown then
 												local SplitMessage = string.split(tostring(input.KeyCode), ".")
 												local NewKeyNoEnum = SplitMessage[3]
-												NestedElement.LibInstance.Text = tostring(NewKeyNoEnum)
+												NestedElement.Instance.Text = tostring(NewKeyNoEnum)
 												NestedElement.Values.CurrentValue = tostring(NewKeyNoEnum)
 												local Success, Response = pcall(function()
 													NestedElement.Values.OnChangedCallback(
@@ -6522,7 +6522,7 @@ function Starlight:CreateWindow(WindowSettings)
 												end)
 
 												if not Success then
-													Parent.LibInstance.Header.Text = "Callback Error"
+													Parent.Instance.Header.Text = "Callback Error"
 													warn(
 														`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 													)
@@ -6535,9 +6535,9 @@ function Starlight:CreateWindow(WindowSettings)
 														})
 													end
 													wait(0.5)
-													Parent.LibInstance.Header.Text = ElementSettings.Name
+													Parent.Instance.Header.Text = ElementSettings.Name
 												end
-												NestedElement.LibInstance:ReleaseFocus()
+												NestedElement.Instance:ReleaseFocus()
 											else
 												Starlight.WindowKeybind = nil
 											end
@@ -6548,7 +6548,7 @@ function Starlight:CreateWindow(WindowSettings)
 											then
 												local SplitMessage = string.split(tostring(input.KeyCode), ".")
 												local NewKeyNoEnum = SplitMessage[3]
-												NestedElement.LibInstance.Text = tostring(NewKeyNoEnum)
+												NestedElement.Instance.Text = tostring(NewKeyNoEnum)
 												NestedElement.Values.CurrentValue = tostring(NewKeyNoEnum)
 												local Success, Response = pcall(function()
 													NestedElement.Values.OnChangedCallback(
@@ -6557,7 +6557,7 @@ function Starlight:CreateWindow(WindowSettings)
 												end)
 
 												if not Success then
-													Parent.LibInstance.Header.Text = "Callback Error"
+													Parent.Instance.Header.Text = "Callback Error"
 													warn(
 														`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 													)
@@ -6570,11 +6570,11 @@ function Starlight:CreateWindow(WindowSettings)
 														})
 													end
 													wait(0.5)
-													Parent.LibInstance.Header.Text = ElementSettings.Name
+													Parent.Instance.Header.Text = ElementSettings.Name
 												end
-												NestedElement.LibInstance:ReleaseFocus()
+												NestedElement.Instance:ReleaseFocus()
 											elseif input.KeyCode == Enum.KeyCode[Starlight.WindowKeybind] then
-												NestedElement.LibInstance.Text = NestedElement.Values.CurrentValue
+												NestedElement.Instance.Text = NestedElement.Values.CurrentValue
 															== "No Bind"
 														and '<font color="rgb(' .. tostring(
 															math.floor(
@@ -6590,13 +6590,13 @@ function Starlight:CreateWindow(WindowSettings)
 															)
 														) .. ')">No Bind</font>'
 													or NestedElement.Values.CurrentValue
-												NestedElement.LibInstance:ReleaseFocus()
+												NestedElement.Instance:ReleaseFocus()
 											end
 										else
 											if input.UserInputType == Enum.UserInputType.MouseButton1 then
-												NestedElement.LibInstance.Text = "MB1"
+												NestedElement.Instance.Text = "MB1"
 												NestedElement.Values.CurrentValue = "MB1"
-												NestedElement.LibInstance:ReleaseFocus()
+												NestedElement.Instance:ReleaseFocus()
 												local Success, Response = pcall(function()
 													NestedElement.Values.OnChangedCallback(
 														NestedElement.Values.CurrentValue
@@ -6604,7 +6604,7 @@ function Starlight:CreateWindow(WindowSettings)
 												end)
 
 												if not Success then
-													Parent.LibInstance.Header.Text = "Callback Error"
+													Parent.Instance.Header.Text = "Callback Error"
 													warn(
 														`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 													)
@@ -6617,12 +6617,12 @@ function Starlight:CreateWindow(WindowSettings)
 														})
 													end
 													wait(0.5)
-													Parent.LibInstance.Header.Text = ElementSettings.Name
+													Parent.Instance.Header.Text = ElementSettings.Name
 												end
 											elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-												NestedElement.LibInstance.Text = "MB2"
+												NestedElement.Instance.Text = "MB2"
 												NestedElement.Values.CurrentValue = "MB2"
-												NestedElement.LibInstance:ReleaseFocus()
+												NestedElement.Instance:ReleaseFocus()
 												local Success, Response = pcall(function()
 													NestedElement.Values.OnChangedCallback(
 														NestedElement.Values.CurrentValue
@@ -6630,7 +6630,7 @@ function Starlight:CreateWindow(WindowSettings)
 												end)
 
 												if not Success then
-													Parent.LibInstance.Header.Text = "Callback Error"
+													Parent.Instance.Header.Text = "Callback Error"
 													warn(
 														`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 													)
@@ -6643,7 +6643,7 @@ function Starlight:CreateWindow(WindowSettings)
 														})
 													end
 													wait(0.5)
-													Parent.LibInstance.Header.Text = ElementSettings.Name
+													Parent.Instance.Header.Text = ElementSettings.Name
 												end
 											end
 										end
@@ -6680,7 +6680,7 @@ function Starlight:CreateWindow(WindowSettings)
 											end)
 
 											if not success then
-												Parent.LibInstance.Header.Text = "Callback Error"
+												Parent.Instance.Header.Text = "Callback Error"
 												warn(
 													`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 												)
@@ -6693,7 +6693,7 @@ function Starlight:CreateWindow(WindowSettings)
 													})
 												end
 												wait(0.5)
-												Parent.LibInstance.Header.Text = ElementSettings.Name
+												Parent.Instance.Header.Text = ElementSettings.Name
 											end
 										else
 											local Held = true
@@ -6711,7 +6711,7 @@ function Starlight:CreateWindow(WindowSettings)
 											end)
 
 											if not success then
-												Parent.LibInstance.Header.Text = "Callback Error"
+												Parent.Instance.Header.Text = "Callback Error"
 												warn(
 													`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 												)
@@ -6724,7 +6724,7 @@ function Starlight:CreateWindow(WindowSettings)
 													})
 												end
 												wait(0.5)
-												Parent.LibInstance.Header.Text = ElementSettings.Name
+												Parent.Instance.Header.Text = ElementSettings.Name
 											end
 
 											local connection
@@ -6746,7 +6746,7 @@ function Starlight:CreateWindow(WindowSettings)
 													end)
 
 													if not success2 then
-														Parent.LibInstance.Header.Text = "Callback Error"
+														Parent.Instance.Header.Text = "Callback Error"
 														warn(
 															`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 														)
@@ -6759,7 +6759,7 @@ function Starlight:CreateWindow(WindowSettings)
 															})
 														end
 														wait(0.5)
-														Parent.LibInstance.Header.Text = ElementSettings.Name
+														Parent.Instance.Header.Text = ElementSettings.Name
 													end
 												end
 											end)
@@ -6776,7 +6776,7 @@ function Starlight:CreateWindow(WindowSettings)
 							end)
 
 							if not Success then
-								Parent.LibInstance.Header.Text = "Callback Error"
+								Parent.Instance.Header.Text = "Callback Error"
 								warn(
 									`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 								)
@@ -6789,23 +6789,23 @@ function Starlight:CreateWindow(WindowSettings)
 									})
 								end
 								wait(0.5)
-								Parent.LibInstance.Header.Text = ElementSettings.Name
+								Parent.Instance.Header.Text = ElementSettings.Name
 							end
 
-							ThemeMethods.bindTheme(NestedElement.LibInstance, "BackgroundColor3", "Backgrounds.Dark")
-							ThemeMethods.bindTheme(NestedElement.LibInstance.UIStroke, "Color", "Foregrounds.Dark")
-							ThemeMethods.bindTheme(NestedElement.LibInstance, "TextColor3", "Foregrounds.Light")
-							ThemeMethods.bindTheme(NestedElement.LibInstance, "PlaceholderColor3", "Foregrounds.Medium")
+							ThemeMethods.bindTheme(NestedElement.Instance, "BackgroundColor3", "Backgrounds.Dark")
+							ThemeMethods.bindTheme(NestedElement.Instance.UIStroke, "Color", "Foregrounds.Dark")
+							ThemeMethods.bindTheme(NestedElement.Instance, "TextColor3", "Foregrounds.Light")
+							ThemeMethods.bindTheme(NestedElement.Instance, "PlaceholderColor3", "Foregrounds.Medium")
 
 							function NestedElement:Destroy()
-								NestedElement.LibInstance:Destroy()
+								NestedElement.Instance:Destroy()
 								NestedElement = nil
 								if connections[ParentIndex .. "_" .. Index] ~= nil then
 									connections[ParentIndex .. "_" .. Index]:Disconnect()
 								end
 								connections[ParentIndex .. "_" .. Index] = nil
-								Parent.LibInstance.Header.Size =
-									UDim2.fromOffset(Parent.LibInstance.Header.Size.X.Offset + 26, 20)
+								Parent.Instance.Header.Size =
+									UDim2.fromOffset(Parent.Instance.Header.Size.X.Offset + 26, 20)
 							end
 
 							function NestedElement:Set(NewNestedSettings, NewNestedIndex)
@@ -6822,9 +6822,9 @@ function Starlight:CreateWindow(WindowSettings)
 
 								NestedElement.Values = NestedSettings
 
-								NestedElement.LibInstance.Name = "BIND_" .. NestedIndex
+								NestedElement.Instance.Name = "BIND_" .. NestedIndex
 
-								NestedElement.LibInstance.Text = NestedElement.Values.CurrentValue == "No Bind"
+								NestedElement.Instance.Text = NestedElement.Values.CurrentValue == "No Bind"
 										and '<font color="rgb(' .. tostring(
 											math.floor(Starlight.CurrentTheme.Foregrounds.Medium.R * 255 + 0.5)
 										) .. "," .. tostring(
@@ -6842,7 +6842,7 @@ function Starlight:CreateWindow(WindowSettings)
 								end)
 
 								if not Success then
-									Parent.LibInstance.Header.Text = "Callback Error"
+									Parent.Instance.Header.Text = "Callback Error"
 									warn(
 										`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 									)
@@ -6855,7 +6855,7 @@ function Starlight:CreateWindow(WindowSettings)
 										})
 									end
 									wait(0.5)
-									Parent.LibInstance.Header.Text = ElementSettings.Name
+									Parent.Instance.Header.Text = ElementSettings.Name
 								end
 
 								Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[ParentIndex].NestedElements[NestedIndex].Values =
@@ -6892,82 +6892,82 @@ function Starlight:CreateWindow(WindowSettings)
 							local hover = false
 							local sliders = {}
 
-							NestedElement.LibInstances[1] = Element.LibInstance.ElementContainer.ColorPicker:Clone()
-							NestedElement.LibInstances[1].Visible = true
-							NestedElement.LibInstances[1].Parent = Parent.LibInstance.ElementContainer
-							Parent.LibInstance.Header.Size =
-								UDim2.fromOffset(Parent.LibInstance.Header.Size.X.Offset - 26, 20)
+							NestedElement.Instances[1] = Element.Instance.ElementContainer.ColorPicker:Clone()
+							NestedElement.Instances[1].Visible = true
+							NestedElement.Instances[1].Parent = Parent.Instance.ElementContainer
+							Parent.Instance.Header.Size =
+								UDim2.fromOffset(Parent.Instance.Header.Size.X.Offset - 26, 20)
 
-							NestedElement.LibInstances[2] = Resources.Elements.ColorPicker:Clone()
-							NestedElement.LibInstances[2].Parent = StarlightUI.PopupOverlay
+							NestedElement.Instances[2] = Resources.Elements.ColorPicker:Clone()
+							NestedElement.Instances[2].Parent = StarlightUI.PopupOverlay
 
-							NestedElement.LibInstances[1].Name = "COLORPICKER_" .. NestedIndex
-							NestedElement.LibInstances[2].Name = "COLORPICKER_" .. NestedIndex
+							NestedElement.Instances[1].Name = "COLORPICKER_" .. NestedIndex
+							NestedElement.Instances[2].Name = "COLORPICKER_" .. NestedIndex
 
 							acrylicEvent.Event:Connect(function()
 								if mainAcrylic then
-									NestedElement.LibInstances[2].BackgroundTransparency = 0.5
+									NestedElement.Instances[2].BackgroundTransparency = 0.5
 								else
-									NestedElement.LibInstances[2].BackgroundTransparency = 0
+									NestedElement.Instances[2].BackgroundTransparency = 0
 								end
 							end)
 							local AcrylicObject = Acrylic.AcrylicPaint()
-							AcrylicObject.AddParent(NestedElement.LibInstances[2])
-							AcrylicObject.Frame.Parent = NestedElement.LibInstances[2]
+							AcrylicObject.AddParent(NestedElement.Instances[2])
+							AcrylicObject.Frame.Parent = NestedElement.Instances[2]
 
 							local function close()
 								if
-									NestedElement.LibInstances[1].AbsolutePosition.Y + 27 + 245
+									NestedElement.Instances[1].AbsolutePosition.Y + 27 + 245
 									>= Camera.ViewportSize.Y - (GuiInset + 20)
 								then
-									NestedElement.LibInstances[2].AnchorPoint = Vector2.new(1, 1)
-									NestedElement.LibInstances[2].Position = UDim2.fromOffset(
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.X) + 22,
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.Y) - 5
+									NestedElement.Instances[2].AnchorPoint = Vector2.new(1, 1)
+									NestedElement.Instances[2].Position = UDim2.fromOffset(
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.X) + 22,
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.Y) - 5
 									)
 								else
-									NestedElement.LibInstances[2].AnchorPoint = Vector2.new(1, 0)
-									NestedElement.LibInstances[2].Position = UDim2.fromOffset(
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.X) + 22,
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.Y) + 35
+									NestedElement.Instances[2].AnchorPoint = Vector2.new(1, 0)
+									NestedElement.Instances[2].Position = UDim2.fromOffset(
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.X) + 22,
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.Y) + 35
 									)
 								end
 
-								NestedElement.LibInstances[2].Container.Visible = false
-								NestedElement.LibInstances[2].TabSelector.Visible = false
-								NestedElement.LibInstances[2].Buttons.Visible = false
+								NestedElement.Instances[2].Container.Visible = false
+								NestedElement.Instances[2].TabSelector.Visible = false
+								NestedElement.Instances[2].Buttons.Visible = false
 
-								Tween(NestedElement.LibInstances[2], { Size = UDim2.fromOffset(0, 0) }, function()
-									if NestedElement and NestedElement.LibInstances ~= nil then
-										NestedElement.LibInstances[2].Visible = false
+								Tween(NestedElement.Instances[2], { Size = UDim2.fromOffset(0, 0) }, function()
+									if NestedElement and NestedElement.Instances ~= nil then
+										NestedElement.Instances[2].Visible = false
 										if acrylicFlag then
 											AcrylicObject.Model.Transparency = 1
 										end
 									end
 								end, Tween.Info(nil, nil, 0.24))
 
-								NestedElement.LibInstances[2].Container.Color.OldColor.Frame.BackgroundColor3 =
+								NestedElement.Instances[2].Container.Color.OldColor.Frame.BackgroundColor3 =
 									NestedElement.Values.CurrentValue
-								NestedElement.LibInstances[2].Container.Color.OldColor.Frame.BackgroundTransparency = NestedElement.Values.Transparency
+								NestedElement.Instances[2].Container.Color.OldColor.Frame.BackgroundTransparency = NestedElement.Values.Transparency
 									or 0
 							end
 
-							NestedElement.LibInstances[1]:GetPropertyChangedSignal("AbsolutePosition"):Connect(close)
+							NestedElement.Instances[1]:GetPropertyChangedSignal("AbsolutePosition"):Connect(close)
 
-							NestedElement.LibInstances[1].Interact.MouseButton1Click:Connect(function()
-								if NestedElement.LibInstances[2].Visible then
+							NestedElement.Instances[1].Interact.MouseButton1Click:Connect(function()
+								if NestedElement.Instances[2].Visible then
 									close()
 								else
-									NestedElement.LibInstances[2].Visible = true
+									NestedElement.Instances[2].Visible = true
 									Tween(
-										NestedElement.LibInstances[2],
+										NestedElement.Instances[2],
 										{ Size = UDim2.fromOffset(320, 245) },
 										nil,
 										Tween.Info(nil, nil, 0.18)
 									)
-									NestedElement.LibInstances[2].Container.Visible = true
-									NestedElement.LibInstances[2].TabSelector.Visible = true
-									NestedElement.LibInstances[2].Buttons.Visible = true
+									NestedElement.Instances[2].Container.Visible = true
+									NestedElement.Instances[2].TabSelector.Visible = true
+									NestedElement.Instances[2].Buttons.Visible = true
 									if acrylicFlag then
 										AcrylicObject.Model.Transparency = 0.98
 									end
@@ -6978,8 +6978,8 @@ function Starlight:CreateWindow(WindowSettings)
 										end
 										local p, pos, size =
 											i.Position,
-											NestedElement.LibInstances[2].AbsolutePosition,
-											NestedElement.LibInstances[2].AbsoluteSize
+											NestedElement.Instances[2].AbsolutePosition,
+											NestedElement.Instances[2].AbsoluteSize
 										if
 											not (
 												p.X >= pos.X
@@ -6995,20 +6995,20 @@ function Starlight:CreateWindow(WindowSettings)
 								end
 							end)
 
-							NestedElement.LibInstances[1].MouseEnter:Connect(function()
+							NestedElement.Instances[1].MouseEnter:Connect(function()
 								hover = true
 							end)
-							NestedElement.LibInstances[1].MouseLeave:Connect(function()
+							NestedElement.Instances[1].MouseLeave:Connect(function()
 								hover = false
 							end)
 
-							for _, TabButton in pairs(NestedElement.LibInstances[2].TabSelector:GetChildren()) do
+							for _, TabButton in pairs(NestedElement.Instances[2].TabSelector:GetChildren()) do
 								if TabButton.Name == "UIListLayout" or TabButton.Name == "UIPadding" then
 									continue
 								end
 
 								TabButton.MouseButton1Click:Connect(function()
-									for _, OtherTabButton in pairs(NestedElement.LibInstances[2].TabSelector:GetChildren()) do
+									for _, OtherTabButton in pairs(NestedElement.Instances[2].TabSelector:GetChildren()) do
 										if
 											OtherTabButton.Name == "UIListLayout"
 											or OtherTabButton.Name == "UIPadding"
@@ -7028,8 +7028,8 @@ function Starlight:CreateWindow(WindowSettings)
 									Tween(TabButton, { BackgroundTransparency = 0.8, TextColor3 = Color3.new(1, 1, 1) })
 									TabButton.Accent.Enabled = true
 
-									NestedElement.LibInstances[2].Container.UIPageLayout:JumpTo(
-										NestedElement.LibInstances[2].Container[TabButton.Name]
+									NestedElement.Instances[2].Container.UIPageLayout:JumpTo(
+										NestedElement.Instances[2].Container[TabButton.Name]
 									)
 								end)
 							end
@@ -7062,7 +7062,7 @@ function Starlight:CreateWindow(WindowSettings)
 								end)
 
 								if not Success then
-									Parent.LibInstance.Header.Text = "Callback Error"
+									Parent.Instance.Header.Text = "Callback Error"
 									warn(
 										`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 									)
@@ -7075,45 +7075,45 @@ function Starlight:CreateWindow(WindowSettings)
 										})
 									end
 									wait(0.5)
-									Parent.LibInstance.Header.Text = Element.Values.Name
+									Parent.Instance.Header.Text = Element.Values.Name
 								end
 							end
 
 							local function updateInstances(currentBox, ignoreCallback)
 								local oldValue = Color3.fromRGB(
 									tonumber(
-										NestedElement.LibInstances[2].Container.Values.HexRGB.Red.PART_Backdrop.PART_Input.Text
+										NestedElement.Instances[2].Container.Values.HexRGB.Red.PART_Backdrop.PART_Input.Text
 									),
 									tonumber(
-										NestedElement.LibInstances[2].Container.Values.HexRGB.Green.PART_Backdrop.PART_Input.Text
+										NestedElement.Instances[2].Container.Values.HexRGB.Green.PART_Backdrop.PART_Input.Text
 									),
 									tonumber(
-										NestedElement.LibInstances[2].Container.Values.HexRGB.Blue.PART_Backdrop.PART_Input.Text
+										NestedElement.Instances[2].Container.Values.HexRGB.Blue.PART_Backdrop.PART_Input.Text
 									)
 								)
 
 								local h, s, v = NestedElement.Values.CurrentValue:ToHSV()
 								if
-									currentBox == NestedElement.LibInstances[2].Container.Color.ColorPicker
-									or currentBox == NestedElement.LibInstances[2].Container.Color.HueSlider
+									currentBox == NestedElement.Instances[2].Container.Color.ColorPicker
+									or currentBox == NestedElement.Instances[2].Container.Color.HueSlider
 								then
-									h = NestedElement.LibInstances[2].Container.Color.HueSlider.Value.Size.Y.Scale
+									h = NestedElement.Instances[2].Container.Color.HueSlider.Value.Size.Y.Scale
 								else
 									if
-										currentBox == NestedElement.LibInstances[2].Container.Values.AlphaHSV.Hue
-										or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Red
-										or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Green
-										or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Blue
-										or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Hex
+										currentBox == NestedElement.Instances[2].Container.Values.AlphaHSV.Hue
+										or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Red
+										or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Green
+										or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Blue
+										or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Hex
 									then
 										local h, _, _ = NestedElement.Values.CurrentValue:ToHSV()
 
-										NestedElement.LibInstances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text =
+										NestedElement.Instances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text =
 											tostring(math.floor((h * 255) + 0.5))
 									end
 									h = (
 										tonumber(
-											NestedElement.LibInstances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text
+											NestedElement.Instances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text
 										) or h * 255
 									) / 255
 								end
@@ -7122,64 +7122,64 @@ function Starlight:CreateWindow(WindowSettings)
 									NestedElement.Values.CurrentValue.G * 255,
 									NestedElement.Values.CurrentValue.B * 255
 
-								if NestedElement.LibInstances[2].Visible == false then
-									NestedElement.LibInstances[2].Container.Color.OldColor.Frame.BackgroundColor3 =
+								if NestedElement.Instances[2].Visible == false then
+									NestedElement.Instances[2].Container.Color.OldColor.Frame.BackgroundColor3 =
 										NestedElement.Values.CurrentValue
-									NestedElement.LibInstances[2].Container.Color.OldColor.Frame.BackgroundTransparency = NestedElement.Values.Transparency
+									NestedElement.Instances[2].Container.Color.OldColor.Frame.BackgroundTransparency = NestedElement.Values.Transparency
 										or 0
 								end
 
-								NestedElement.LibInstances[2].Container.Color.NewColor.Frame.BackgroundColor3 =
+								NestedElement.Instances[2].Container.Color.NewColor.Frame.BackgroundColor3 =
 									NestedElement.Values.CurrentValue
-								NestedElement.LibInstances[2].Container.Color.NewColor.Frame.BackgroundTransparency = NestedElement.Values.Transparency
+								NestedElement.Instances[2].Container.Color.NewColor.Frame.BackgroundTransparency = NestedElement.Values.Transparency
 									or 0
-								NestedElement.LibInstances[1].BackgroundColor3 = NestedElement.Values.CurrentValue
-								NestedElement.LibInstances[1].BackgroundTransparency = NestedElement.Values.Transparency
+								NestedElement.Instances[1].BackgroundColor3 = NestedElement.Values.CurrentValue
+								NestedElement.Instances[1].BackgroundTransparency = NestedElement.Values.Transparency
 									or 0
 								task.delay(1 / 60, function()
-									NestedElement.LibInstances[1].DropShadowHolder.DropShadow.ImageColor3 = GammaBlend(
+									NestedElement.Instances[1].DropShadowHolder.DropShadow.ImageColor3 = GammaBlend(
 										NestedElement.Values.CurrentValue,
 										NestedElement.Values.Transparency or 0,
 										Color3.fromRGB(242, 242, 242)
 									)
 								end)
 
-								if currentBox ~= NestedElement.LibInstances[2].Container.Color.ColorPicker then
-									NestedElement.LibInstances[2].Container.Color.ColorPicker.Point.Position =
+								if currentBox ~= NestedElement.Instances[2].Container.Color.ColorPicker then
+									NestedElement.Instances[2].Container.Color.ColorPicker.Point.Position =
 										UDim2.new(s, 0, 1 - v, 0)
 								end
-								NestedElement.LibInstances[2].Container.Color.ColorPicker.BackgroundColor3 =
+								NestedElement.Instances[2].Container.Color.ColorPicker.BackgroundColor3 =
 									Color3.fromHSV(h, 1, 1)
-								NestedElement.LibInstances[2].Container.Color.TransparencySlider.Color.BackgroundColor3 =
+								NestedElement.Instances[2].Container.Color.TransparencySlider.Color.BackgroundColor3 =
 									NestedElement.Values.CurrentValue
 								if s * 255 < 30 then
 									if v * 255 > 90 and v * 255 < 180 then
-										NestedElement.LibInstances[2].Container.Color.ColorPicker.Point.UIStroke.Color =
+										NestedElement.Instances[2].Container.Color.ColorPicker.Point.UIStroke.Color =
 											Color3.new(1, 1, 1)
 									else
-										NestedElement.LibInstances[2].Container.Color.ColorPicker.Point.UIStroke.Color =
+										NestedElement.Instances[2].Container.Color.ColorPicker.Point.UIStroke.Color =
 											Color3.fromRGB(165, 165, 165)
 									end
 									if v * 255 > 250 then
-										NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value.Knob.ImageColor3 =
+										NestedElement.Instances[2].Container.Color.TransparencySlider.Value.Knob.ImageColor3 =
 											Color3.new()
 									else
-										NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value.Knob.ImageColor3 =
+										NestedElement.Instances[2].Container.Color.TransparencySlider.Value.Knob.ImageColor3 =
 											Color3.new(1, 1, 1)
 									end
 								else
-									NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value.Knob.ImageColor3 =
+									NestedElement.Instances[2].Container.Color.TransparencySlider.Value.Knob.ImageColor3 =
 										Color3.new(1, 1, 1)
-									NestedElement.LibInstances[2].Container.Color.ColorPicker.Point.UIStroke.Color =
+									NestedElement.Instances[2].Container.Color.ColorPicker.Point.UIStroke.Color =
 										Color3.fromRGB(165, 165, 165)
 								end
 
 								Tween(
-									NestedElement.LibInstances[2].Container.Color.HueSlider.Value,
+									NestedElement.Instances[2].Container.Color.HueSlider.Value,
 									{ Size = UDim2.new(1, 0, h, 0) }
 								)
 								Tween(
-									NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value,
+									NestedElement.Instances[2].Container.Color.TransparencySlider.Value,
 									{ Size = UDim2.new(1, 0, 1 - (NestedElement.Values.Transparency or 0), 0) }
 								)
 
@@ -7189,7 +7189,7 @@ function Starlight:CreateWindow(WindowSettings)
 									math.floor((color.G * 255) + 0.5),
 									math.floor((color.B * 255) + 0.5)
 
-								for _, Side in pairs(NestedElement.LibInstances[2].Container.Values:GetChildren()) do
+								for _, Side in pairs(NestedElement.Instances[2].Container.Values:GetChildren()) do
 									if Side.ClassName ~= "Frame" then
 										continue
 									end
@@ -7230,13 +7230,13 @@ function Starlight:CreateWindow(WindowSettings)
 										if Input.Name == "Hue" then
 											if
 												currentBox
-													== NestedElement.LibInstances[2].Container.Values.AlphaHSV.Hue
-												or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Red
-												or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Green
-												or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Blue
-												or currentBox == NestedElement.LibInstances[2].Container.Values.HexRGB.Hex
+													== NestedElement.Instances[2].Container.Values.AlphaHSV.Hue
+												or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Red
+												or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Green
+												or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Blue
+												or currentBox == NestedElement.Instances[2].Container.Values.HexRGB.Hex
 												or currentBox
-													== NestedElement.LibInstances[2].Container.Color.HueSlider
+													== NestedElement.Instances[2].Container.Color.HueSlider
 											then
 												local h, _, _ = NestedElement.Values.CurrentValue:ToHSV()
 
@@ -7262,26 +7262,26 @@ function Starlight:CreateWindow(WindowSettings)
 								end
 
 								if NestedElement.Values.Transparency == nil then
-									NestedElement.LibInstances[2].Container.Values.AlphaHSV.Alpha.Visible = false
-									NestedElement.LibInstances[2].Container.Color.TransparencySlider.Visible = false
-									NestedElement.LibInstances[2].Container.Color.HueSlider.Position =
+									NestedElement.Instances[2].Container.Values.AlphaHSV.Alpha.Visible = false
+									NestedElement.Instances[2].Container.Color.TransparencySlider.Visible = false
+									NestedElement.Instances[2].Container.Color.HueSlider.Position =
 										UDim2.new(1, -11, 0, 15)
-									NestedElement.LibInstances[2].Container.Color.ColorPicker.Size =
+									NestedElement.Instances[2].Container.Color.ColorPicker.Size =
 										UDim2.fromOffset(283, 160)
-									NestedElement.LibInstances[2].Container.Color.OldColor.Size = UDim2.fromOffset(137, 24)
-									NestedElement.LibInstances[2].Container.Color.NewColor.Size = UDim2.fromOffset(137, 24)
-									NestedElement.LibInstances[2].Container.Color.OldColor.Position =
+									NestedElement.Instances[2].Container.Color.OldColor.Size = UDim2.fromOffset(137, 24)
+									NestedElement.Instances[2].Container.Color.NewColor.Size = UDim2.fromOffset(137, 24)
+									NestedElement.Instances[2].Container.Color.OldColor.Position =
 										UDim2.fromOffset(155, 180)
 								else
-									NestedElement.LibInstances[2].Container.Values.AlphaHSV.Alpha.Visible = true
-									NestedElement.LibInstances[2].Container.Color.TransparencySlider.Visible = true
-									NestedElement.LibInstances[2].Container.Color.HueSlider.Position =
+									NestedElement.Instances[2].Container.Values.AlphaHSV.Alpha.Visible = true
+									NestedElement.Instances[2].Container.Color.TransparencySlider.Visible = true
+									NestedElement.Instances[2].Container.Color.HueSlider.Position =
 										UDim2.new(1, -23, 0, 15)
-									NestedElement.LibInstances[2].Container.Color.ColorPicker.Size =
+									NestedElement.Instances[2].Container.Color.ColorPicker.Size =
 										UDim2.fromOffset(268, 160)
-									NestedElement.LibInstances[2].Container.Color.OldColor.Size = UDim2.fromOffset(130, 24)
-									NestedElement.LibInstances[2].Container.Color.NewColor.Size = UDim2.fromOffset(130, 24)
-									NestedElement.LibInstances[2].Container.Color.OldColor.Position =
+									NestedElement.Instances[2].Container.Color.OldColor.Size = UDim2.fromOffset(130, 24)
+									NestedElement.Instances[2].Container.Color.NewColor.Size = UDim2.fromOffset(130, 24)
+									NestedElement.Instances[2].Container.Color.OldColor.Position =
 										UDim2.fromOffset(148, 180)
 								end
 
@@ -7293,7 +7293,7 @@ function Starlight:CreateWindow(WindowSettings)
 							updateInstances()
 							local h, _, _ = NestedElement.Values.CurrentValue:ToHSV()
 
-							NestedElement.LibInstances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text =
+							NestedElement.Instances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text =
 								tostring(math.floor((h * 255) + 0.5))
 
 							do
@@ -7316,18 +7316,18 @@ function Starlight:CreateWindow(WindowSettings)
 										or input.UserInputType == Enum.UserInputType.Touch
 									then
 										if mainDragging then
-											Tween(NestedElement.LibInstances[2].Container.Color.ColorPicker.Point, {
+											Tween(NestedElement.Instances[2].Container.Color.ColorPicker.Point, {
 												Size = mainHover and UDim2.new(0, 10, 0, 10) or UDim2.new(0, 7, 0, 7),
 											})
 										end
 										if sliderDragging then
-											Tween(NestedElement.LibInstances[2].Container.Color.HueSlider.Value.Knob, {
+											Tween(NestedElement.Instances[2].Container.Color.HueSlider.Value.Knob, {
 												Size = sliderHover and UDim2.new(0, 8, 0, 8) or UDim2.new(0, 6, 0, 6),
 											})
 										end
 										if transDragging then
 											Tween(
-												NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value.Knob,
+												NestedElement.Instances[2].Container.Color.TransparencySlider.Value.Knob,
 												{
 													Size = transHover and UDim2.new(0, 10, 0, 10)
 														or UDim2.new(0, 8, 0, 8),
@@ -7339,91 +7339,91 @@ function Starlight:CreateWindow(WindowSettings)
 										transDragging = false
 									end
 								end)
-								NestedElement.LibInstances[2].Container.Color.ColorPicker.MouseButton1Down:Connect(
+								NestedElement.Instances[2].Container.Color.ColorPicker.MouseButton1Down:Connect(
 									function()
 										mainDragging = true
 										Tween(
-											NestedElement.LibInstances[2].Container.Color.ColorPicker.Point,
+											NestedElement.Instances[2].Container.Color.ColorPicker.Point,
 											{ Size = UDim2.new(0, 5, 0, 5) }
 										)
 									end
 								)
-								NestedElement.LibInstances[2].Container.Color.ColorPicker.MouseLeave:Connect(function()
+								NestedElement.Instances[2].Container.Color.ColorPicker.MouseLeave:Connect(function()
 									mainHover = false
 									if mainDragging then
 										return
 									end
 									Tween(
-										NestedElement.LibInstances[2].Container.Color.ColorPicker.Point,
+										NestedElement.Instances[2].Container.Color.ColorPicker.Point,
 										{ Size = UDim2.new(0, 7, 0, 7) }
 									)
 								end)
-								NestedElement.LibInstances[2].Container.Color.ColorPicker.MouseEnter:Connect(function()
+								NestedElement.Instances[2].Container.Color.ColorPicker.MouseEnter:Connect(function()
 									mainHover = true
 									if mainDragging then
 										return
 									end
 									Tween(
-										NestedElement.LibInstances[2].Container.Color.ColorPicker.Point,
+										NestedElement.Instances[2].Container.Color.ColorPicker.Point,
 										{ Size = UDim2.new(0, 9, 0, 9) }
 									)
 								end)
-								NestedElement.LibInstances[2].Container.Color.HueSlider.MouseButton1Down:Connect(function()
+								NestedElement.Instances[2].Container.Color.HueSlider.MouseButton1Down:Connect(function()
 									sliderDragging = true
 									Tween(
-										NestedElement.LibInstances[2].Container.Color.HueSlider.Value.Knob,
+										NestedElement.Instances[2].Container.Color.HueSlider.Value.Knob,
 										{ Size = UDim2.new(0, 4, 0, 4) }
 									)
 								end)
-								NestedElement.LibInstances[2].Container.Color.HueSlider.MouseLeave:Connect(function()
+								NestedElement.Instances[2].Container.Color.HueSlider.MouseLeave:Connect(function()
 									sliderHover = false
 									if sliderDragging then
 										return
 									end
 									Tween(
-										NestedElement.LibInstances[2].Container.Color.HueSlider.Value.Knob,
+										NestedElement.Instances[2].Container.Color.HueSlider.Value.Knob,
 										{ Size = UDim2.new(0, 6, 0, 6) }
 									)
 								end)
-								NestedElement.LibInstances[2].Container.Color.HueSlider.MouseEnter:Connect(function()
+								NestedElement.Instances[2].Container.Color.HueSlider.MouseEnter:Connect(function()
 									sliderHover = true
 									if sliderDragging then
 										return
 									end
 									Tween(
-										NestedElement.LibInstances[2].Container.Color.HueSlider.Value.Knob,
+										NestedElement.Instances[2].Container.Color.HueSlider.Value.Knob,
 										{ Size = UDim2.new(0, 8, 0, 8) }
 									)
 								end)
-								NestedElement.LibInstances[2].Container.Color.TransparencySlider.MouseButton1Down:Connect(
+								NestedElement.Instances[2].Container.Color.TransparencySlider.MouseButton1Down:Connect(
 									function()
 										transDragging = true
 										Tween(
-											NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value.Knob,
+											NestedElement.Instances[2].Container.Color.TransparencySlider.Value.Knob,
 											{ Size = UDim2.new(0, 6, 0, 6) }
 										)
 									end
 								)
-								NestedElement.LibInstances[2].Container.Color.TransparencySlider.MouseLeave:Connect(
+								NestedElement.Instances[2].Container.Color.TransparencySlider.MouseLeave:Connect(
 									function()
 										transHover = false
 										if sliderDragging then
 											return
 										end
 										Tween(
-											NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value.Knob,
+											NestedElement.Instances[2].Container.Color.TransparencySlider.Value.Knob,
 											{ Size = UDim2.new(0, 8, 0, 8) }
 										)
 									end
 								)
-								NestedElement.LibInstances[2].Container.Color.TransparencySlider.MouseEnter:Connect(
+								NestedElement.Instances[2].Container.Color.TransparencySlider.MouseEnter:Connect(
 									function()
 										transHover = true
 										if transDragging then
 											return
 										end
 										Tween(
-											NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value.Knob,
+											NestedElement.Instances[2].Container.Color.TransparencySlider.Value.Knob,
 											{ Size = UDim2.new(0, 10, 0, 10) }
 										)
 									end
@@ -7433,30 +7433,30 @@ function Starlight:CreateWindow(WindowSettings)
 									if mainDragging then
 										local localX = math.clamp(
 											Mouse.X
-												- NestedElement.LibInstances[2].Container.Color.ColorPicker.AbsolutePosition.X,
+												- NestedElement.Instances[2].Container.Color.ColorPicker.AbsolutePosition.X,
 											0,
-											NestedElement.LibInstances[2].Container.Color.ColorPicker.AbsoluteSize.X
+											NestedElement.Instances[2].Container.Color.ColorPicker.AbsoluteSize.X
 										)
 										local localY = math.clamp(
 											Mouse.Y
-												- NestedElement.LibInstances[2].Container.Color.ColorPicker.AbsolutePosition.Y,
+												- NestedElement.Instances[2].Container.Color.ColorPicker.AbsolutePosition.Y,
 											0,
-											NestedElement.LibInstances[2].Container.Color.ColorPicker.AbsoluteSize.Y
+											NestedElement.Instances[2].Container.Color.ColorPicker.AbsoluteSize.Y
 										)
 										Tween(
-											NestedElement.LibInstances[2].Container.Color.ColorPicker.Point,
+											NestedElement.Instances[2].Container.Color.ColorPicker.Point,
 											{ Position = UDim2.new(0, localX, 0, localY) }
 										)
 										s = localX
-											/ NestedElement.LibInstances[2].Container.Color.ColorPicker.AbsoluteSize.X
+											/ NestedElement.Instances[2].Container.Color.ColorPicker.AbsoluteSize.X
 										v = 1
 											- (
 												localY
-												/ NestedElement.LibInstances[2].Container.Color.ColorPicker.AbsoluteSize.Y
+												/ NestedElement.Instances[2].Container.Color.ColorPicker.AbsoluteSize.Y
 											)
 										local color = Color3.fromHSV(h, s, v)
 										NestedElement.Values.CurrentValue = color
-										updateInstances(NestedElement.LibInstances[2].Container.Color.ColorPicker)
+										updateInstances(NestedElement.Instances[2].Container.Color.ColorPicker)
 										local r, g, b =
 											math.floor((color.R * 255) + 0.5),
 											math.floor((color.G * 255) + 0.5),
@@ -7465,16 +7465,16 @@ function Starlight:CreateWindow(WindowSettings)
 									if sliderDragging then
 										local localY = math.clamp(
 											Mouse.Y
-												- NestedElement.LibInstances[2].Container.Color.HueSlider.AbsolutePosition.Y,
+												- NestedElement.Instances[2].Container.Color.HueSlider.AbsolutePosition.Y,
 											0,
-											NestedElement.LibInstances[2].Container.Color.HueSlider.AbsoluteSize.Y
+											NestedElement.Instances[2].Container.Color.HueSlider.AbsoluteSize.Y
 										)
-										h = localY / NestedElement.LibInstances[2].Container.Color.HueSlider.AbsoluteSize.Y
+										h = localY / NestedElement.Instances[2].Container.Color.HueSlider.AbsoluteSize.Y
 										local color = Color3.fromHSV(h, s, v)
 										NestedElement.Values.CurrentValue = color
-										updateInstances(NestedElement.LibInstances[2].Container.Color.HueSlider)
+										updateInstances(NestedElement.Instances[2].Container.Color.HueSlider)
 										Tween(
-											NestedElement.LibInstances[2].Container.Color.HueSlider.Value,
+											NestedElement.Instances[2].Container.Color.HueSlider.Value,
 											{ Size = UDim2.new(1, 0, h, 0) }
 										)
 										local r, g, b =
@@ -7485,14 +7485,14 @@ function Starlight:CreateWindow(WindowSettings)
 									if transDragging then
 										local localY = math.clamp(
 											Mouse.Y
-												- NestedElement.LibInstances[2].Container.Color.TransparencySlider.AbsolutePosition.Y,
+												- NestedElement.Instances[2].Container.Color.TransparencySlider.AbsolutePosition.Y,
 											0,
-											NestedElement.LibInstances[2].Container.Color.TransparencySlider.AbsoluteSize.Y
+											NestedElement.Instances[2].Container.Color.TransparencySlider.AbsoluteSize.Y
 										)
 										local t = localY
-											/ NestedElement.LibInstances[2].Container.Color.TransparencySlider.AbsoluteSize.Y
+											/ NestedElement.Instances[2].Container.Color.TransparencySlider.AbsoluteSize.Y
 										Tween(
-											NestedElement.LibInstances[2].Container.Color.TransparencySlider.Value,
+											NestedElement.Instances[2].Container.Color.TransparencySlider.Value,
 											{ Size = UDim2.new(1, 0, t, 0) }
 										)
 										NestedElement.Values.Transparency = 1 - t
@@ -7501,17 +7501,17 @@ function Starlight:CreateWindow(WindowSettings)
 								end)
 							end
 
-							NestedElement.LibInstances[2].Container.Color.OldColor.MouseButton1Click:Connect(function()
+							NestedElement.Instances[2].Container.Color.OldColor.MouseButton1Click:Connect(function()
 								NestedElement.Values.CurrentValue =
-									NestedElement.LibInstances[2].Container.Color.OldColor.Frame.BackgroundColor3
+									NestedElement.Instances[2].Container.Color.OldColor.Frame.BackgroundColor3
 								if NestedElement.Values.Transparency ~= nil then
 									NestedElement.Values.Transparency =
-										NestedElement.LibInstances[2].Container.Color.OldColor.Frame.BackgroundTransparency
+										NestedElement.Instances[2].Container.Color.OldColor.Frame.BackgroundTransparency
 								end
-								updateInstances(NestedElement.LibInstances[2].Container.Values.AlphaHSV.Hue)
+								updateInstances(NestedElement.Instances[2].Container.Values.AlphaHSV.Hue)
 							end)
 
-							for _, Side in pairs(NestedElement.LibInstances[2].Container.Values:GetChildren()) do
+							for _, Side in pairs(NestedElement.Instances[2].Container.Values:GetChildren()) do
 								if Side.ClassName ~= "Frame" then
 									continue
 								end
@@ -7706,23 +7706,23 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 
 							ThemeMethods.bindTheme(
-								NestedElement.LibInstances[2],
+								NestedElement.Instances[2],
 								"BackgroundColor3",
 								"Backgrounds.Groupbox"
 							)
-							ThemeMethods.bindTheme(NestedElement.LibInstances[2].UIStroke, "Color", "Foregrounds.Dark")
+							ThemeMethods.bindTheme(NestedElement.Instances[2].UIStroke, "Color", "Foregrounds.Dark")
 							ThemeMethods.bindTheme(
-								NestedElement.LibInstances[2].Background,
+								NestedElement.Instances[2].Background,
 								"BackgroundColor3",
 								"Backgrounds.Dark"
 							)
-							for _, button in pairs(NestedElement.LibInstances[2].Buttons:GetChildren()) do
+							for _, button in pairs(NestedElement.Instances[2].Buttons:GetChildren()) do
 								if button.ClassName ~= "TextButton" then
 									continue
 								end
 								ThemeMethods.bindTheme(button, "ImageColor3", "Foregrounds.Dark")
 							end
-							for _, button in pairs(NestedElement.LibInstances[2].TabSelector:GetChildren()) do
+							for _, button in pairs(NestedElement.Instances[2].TabSelector:GetChildren()) do
 								if button.ClassName ~= "TextButton" then
 									continue
 								end
@@ -7730,13 +7730,13 @@ function Starlight:CreateWindow(WindowSettings)
 								ThemeMethods.bindTheme(button.Accent, "Color", "Accents.Main")
 							end
 							themeEvent.Event:Connect(function()
-								NestedElement.LibInstances[2].TabSelector[NestedElement.LibInstances[2].Container.UIPageLayout.CurrentPage.Name].TextColor3 =
+								NestedElement.Instances[2].TabSelector[NestedElement.Instances[2].Container.UIPageLayout.CurrentPage.Name].TextColor3 =
 									Color3.new(1, 1, 1)
 							end)
-							for _, shadow in pairs(NestedElement.LibInstances[2].DropShadowHolder:GetChildren()) do
+							for _, shadow in pairs(NestedElement.Instances[2].DropShadowHolder:GetChildren()) do
 								ThemeMethods.bindTheme(shadow, "ImageColor3", "Miscellaneous.LighterShadow")
 							end
-							for _, side in pairs(NestedElement.LibInstances[2].Container.Values:GetChildren()) do
+							for _, side in pairs(NestedElement.Instances[2].Container.Values:GetChildren()) do
 								if side.ClassName ~= "Frame" then
 									continue
 								end
@@ -7767,11 +7767,11 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 
 							function NestedElement:Destroy()
-								NestedElement.LibInstances[1]:Destroy()
-								NestedElement.LibInstances[2]:Destroy()
+								NestedElement.Instances[1]:Destroy()
+								NestedElement.Instances[2]:Destroy()
 								NestedElement = nil
-								Parent.LibInstance.Header.Size =
-									UDim2.fromOffset(Parent.LibInstance.Header.Size.X.Offset - 26, 20)
+								Parent.Instance.Header.Size =
+									UDim2.fromOffset(Parent.Instance.Header.Size.X.Offset - 26, 20)
 							end
 
 							function NestedElement:Set(NewNestedSettings, NewNestedIndex, ignoreCallback: boolean?)
@@ -7789,7 +7789,7 @@ function Starlight:CreateWindow(WindowSettings)
 								NestedElement.Values = NestedSettings
 								local h, _, _ = NestedElement.Values.CurrentValue:ToHSV()
 
-								NestedElement.LibInstances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text =
+								NestedElement.Instances[2].Container.Values.AlphaHSV.Hue.PART_Backdrop.PART_Input.Text =
 									tostring(math.floor((h * 255) + 0.5))
 
 								updateInstances(nil, ignoreCallback)
@@ -7820,7 +7820,7 @@ function Starlight:CreateWindow(WindowSettings)
 						}
 						]]
 
-						local additionSize = Parent.LibInstance.DropdownHolder:FindFirstChild("Dropdown") and 36 or 34
+						local additionSize = Parent.Instance.DropdownHolder:FindFirstChild("Dropdown") and 36 or 34
 						local localConnections = {}
 
 						NestedSettings.MultipleOptions = NestedSettings.MultipleOptions or false
@@ -7838,29 +7838,29 @@ function Starlight:CreateWindow(WindowSettings)
 							local hover = false
 							local height = 175
 
-							NestedElement.LibInstances[1] = Element.LibInstance.DropdownHolder.Dropdown:Clone()
-							NestedElement.LibInstances[1].Visible = true
-							NestedElement.LibInstances[1].Parent = Parent.LibInstance.DropdownHolder
+							NestedElement.Instances[1] = Element.Instance.DropdownHolder.Dropdown:Clone()
+							NestedElement.Instances[1].Visible = true
+							NestedElement.Instances[1].Parent = Parent.Instance.DropdownHolder
 							if Parent ~= Element then
 								local instance2
-								for i, v in pairs(Parent.LibInstance.Parent:GetChildren()) do
-									if v.Name == Parent.LibInstance.Name and v ~= Parent.LibInstance then
+								for i, v in pairs(Parent.Instance.Parent:GetChildren()) do
+									if v.Name == Parent.Instance.Name and v ~= Parent.Instance then
 										instance2 = v
 									end
 								end
-								instance2.Size = UDim2.fromOffset(0, Parent.LibInstance.Size.Y.Offset + additionSize)
-								Parent.LibInstance.Size = UDim2.fromOffset(0, Parent.LibInstance.Size.Y.Offset + additionSize)
+								instance2.Size = UDim2.fromOffset(0, Parent.Instance.Size.Y.Offset + additionSize)
+								Parent.Instance.Size = UDim2.fromOffset(0, Parent.Instance.Size.Y.Offset + additionSize)
 							else
-								Parent.LibInstance.Size = UDim2.fromOffset(0, Parent.LibInstance.Size.Y.Offset + additionSize)
+								Parent.Instance.Size = UDim2.fromOffset(0, Parent.Instance.Size.Y.Offset + additionSize)
 							end
 
-							NestedElement.LibInstances[2] = Resources.Elements.DropdownPopup:Clone()
-							NestedElement.LibInstances[2].Parent = StarlightUI.PopupOverlay
+							NestedElement.Instances[2] = Resources.Elements.DropdownPopup:Clone()
+							NestedElement.Instances[2].Parent = StarlightUI.PopupOverlay
 
-							NestedElement.LibInstances[1].Name = "DROPDOWN_" .. NestedIndex
-							NestedElement.LibInstances[2].Name = "DROPDOWN_" .. NestedIndex
+							NestedElement.Instances[1].Name = "DROPDOWN_" .. NestedIndex
+							NestedElement.Instances[2].Name = "DROPDOWN_" .. NestedIndex
 
-							for _, option in pairs(NestedElement.LibInstances[2].List:GetChildren()) do
+							for _, option in pairs(NestedElement.Instances[2].List:GetChildren()) do
 								if option.ClassName == "Frame" then
 									option:Destroy()
 								end
@@ -7868,46 +7868,46 @@ function Starlight:CreateWindow(WindowSettings)
 
 							acrylicEvent.Event:Connect(function()
 								if mainAcrylic then
-									NestedElement.LibInstances[2].BackgroundTransparency = 0.5
+									NestedElement.Instances[2].BackgroundTransparency = 0.5
 								else
-									NestedElement.LibInstances[2].BackgroundTransparency = 0
+									NestedElement.Instances[2].BackgroundTransparency = 0
 								end
 							end)
 							local AcrylicObject = Acrylic.AcrylicPaint()
-							AcrylicObject.AddParent(NestedElement.LibInstances[2])
-							AcrylicObject.Frame.Parent = NestedElement.LibInstances[2]
+							AcrylicObject.AddParent(NestedElement.Instances[2])
+							AcrylicObject.Frame.Parent = NestedElement.Instances[2]
 
 							local function updPos()
 								if
-									NestedElement.LibInstances[1].AbsolutePosition.Y + 35 + height
+									NestedElement.Instances[1].AbsolutePosition.Y + 35 + height
 									>= Camera.ViewportSize.Y - (GuiInset + 20)
 								then
-									NestedElement.LibInstances[2].AnchorPoint = Vector2.new(0, 1)
-									NestedElement.LibInstances[2].Position = UDim2.fromOffset(
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.X),
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.Y) - 5
+									NestedElement.Instances[2].AnchorPoint = Vector2.new(0, 1)
+									NestedElement.Instances[2].Position = UDim2.fromOffset(
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.X),
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.Y) - 5
 									)
 								else
-									NestedElement.LibInstances[2].AnchorPoint = Vector2.new(0, 0)
-									NestedElement.LibInstances[2].Position = UDim2.fromOffset(
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.X),
-										math.ceil(NestedElement.LibInstances[1].AbsolutePosition.Y) + 35
+									NestedElement.Instances[2].AnchorPoint = Vector2.new(0, 0)
+									NestedElement.Instances[2].Position = UDim2.fromOffset(
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.X),
+										math.ceil(NestedElement.Instances[1].AbsolutePosition.Y) + 35
 									)
 								end
 							end
 							local function close()
 								Tween(
-									NestedElement.LibInstances[2].List,
+									NestedElement.Instances[2].List,
 									{ Size = UDim2.new(1, 0, 0, 0) },
 									nil,
 									Tween.Info(nil, nil, 0.18)
 								)
 								Tween(
-									NestedElement.LibInstances[2],
-									{ Size = UDim2.fromOffset(NestedElement.LibInstances[2].Size.X.Offset, 0) },
+									NestedElement.Instances[2],
+									{ Size = UDim2.fromOffset(NestedElement.Instances[2].Size.X.Offset, 0) },
 									function()
-										if NestedElement and NestedElement.LibInstances ~= nil then
-											NestedElement.LibInstances[2].Visible = false
+										if NestedElement and NestedElement.Instances ~= nil then
+											NestedElement.Instances[2].Visible = false
 											if acrylicFlag then
 												AcrylicObject.Model.Transparency = 1
 											end
@@ -7916,39 +7916,39 @@ function Starlight:CreateWindow(WindowSettings)
 									Tween.Info(nil, nil, 0.18)
 								)
 							end
-							NestedElement.LibInstances[1]:GetPropertyChangedSignal("AbsolutePosition"):Connect(close)
-							NestedElement.LibInstances[1]:GetPropertyChangedSignal("AbsolutePosition"):Connect(updPos)
+							NestedElement.Instances[1]:GetPropertyChangedSignal("AbsolutePosition"):Connect(close)
+							NestedElement.Instances[1]:GetPropertyChangedSignal("AbsolutePosition"):Connect(updPos)
 							updPos()
 							close()
 
-							NestedElement.LibInstances[1]:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-								NestedElement.LibInstances[2].Size = UDim2.fromOffset(
-									math.ceil(NestedElement.LibInstances[1].AbsoluteSize.X),
-									NestedElement.LibInstances[2].Size.Y.Offset
+							NestedElement.Instances[1]:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+								NestedElement.Instances[2].Size = UDim2.fromOffset(
+									math.ceil(NestedElement.Instances[1].AbsoluteSize.X),
+									NestedElement.Instances[2].Size.Y.Offset
 								)
 								--task.wait()
 								NestedElement:truncate()
 							end)
 
-							NestedElement.LibInstances[1].Interact.MouseButton1Click:Connect(function()
-								if NestedElement.LibInstances[2].Visible then
+							NestedElement.Instances[1].Interact.MouseButton1Click:Connect(function()
+								if NestedElement.Instances[2].Visible then
 									close()
 								else
-									NestedElement.LibInstances[2].Visible = true
-									height = NestedElement.LibInstances[2].List.AbsoluteCanvasSize.Y >= 175 and 175
-										or NestedElement.LibInstances[2].List.AbsoluteCanvasSize.Y
+									NestedElement.Instances[2].Visible = true
+									height = NestedElement.Instances[2].List.AbsoluteCanvasSize.Y >= 175 and 175
+										or NestedElement.Instances[2].List.AbsoluteCanvasSize.Y
 									updPos()
-									NestedElement.LibInstances[2].List.Size = UDim2.new(1, 0, 0, 0)
-									NestedElement.LibInstances[2].List.ScrollBarImageTransparency = 1
+									NestedElement.Instances[2].List.Size = UDim2.new(1, 0, 0, 0)
+									NestedElement.Instances[2].List.ScrollBarImageTransparency = 1
 									Tween(
-										NestedElement.LibInstances[2],
-										{ Size = UDim2.fromOffset(NestedElement.LibInstances[2].Size.X.Offset, height) }
+										NestedElement.Instances[2],
+										{ Size = UDim2.fromOffset(NestedElement.Instances[2].Size.X.Offset, height) }
 									)
 									Tween(
-										NestedElement.LibInstances[2].List,
+										NestedElement.Instances[2].List,
 										{ Size = UDim2.new(1, 0, 0, height) },
 										function()
-											NestedElement.LibInstances[2].List.ScrollBarImageTransparency = 0
+											NestedElement.Instances[2].List.ScrollBarImageTransparency = 0
 										end
 									)
 									if acrylicFlag then
@@ -7961,8 +7961,8 @@ function Starlight:CreateWindow(WindowSettings)
 										end
 										local p, pos, size =
 											i.Position,
-											NestedElement.LibInstances[2].AbsolutePosition,
-											NestedElement.LibInstances[2].AbsoluteSize
+											NestedElement.Instances[2].AbsolutePosition,
+											NestedElement.Instances[2].AbsoluteSize
 										if
 											not (
 												p.X >= pos.X
@@ -7980,31 +7980,31 @@ function Starlight:CreateWindow(WindowSettings)
 
 							local function hover()
 								Tween(
-									NestedElement.LibInstances[1].UIStroke,
+									NestedElement.Instances[1].UIStroke,
 									{ Color = Starlight.CurrentTheme.Foregrounds.DarkHover }
 								)
 								Tween(
-									NestedElement.LibInstances[2].UIStroke,
+									NestedElement.Instances[2].UIStroke,
 									{ Color = Starlight.CurrentTheme.Foregrounds.DarkHover }
 								)
 								hover = true
 							end
 							local function leave()
 								Tween(
-									NestedElement.LibInstances[1].UIStroke,
+									NestedElement.Instances[1].UIStroke,
 									{ Color = Starlight.CurrentTheme.Foregrounds.Dark }
 								)
 								Tween(
-									NestedElement.LibInstances[2].UIStroke,
+									NestedElement.Instances[2].UIStroke,
 									{ Color = Starlight.CurrentTheme.Foregrounds.Dark }
 								)
 								hover = false
 							end
 
-							NestedElement.LibInstances[1].MouseEnter:Connect(hover)
-							NestedElement.LibInstances[1].MouseLeave:Connect(leave)
-							NestedElement.LibInstances[2].MouseEnter:Connect(hover)
-							NestedElement.LibInstances[2].MouseLeave:Connect(leave)
+							NestedElement.Instances[1].MouseEnter:Connect(hover)
+							NestedElement.Instances[1].MouseLeave:Connect(leave)
+							NestedElement.Instances[2].MouseEnter:Connect(hover)
+							NestedElement.Instances[2].MouseLeave:Connect(leave)
 
 							if NestedElement.Values.CurrentOption then
 								if typeof(NestedElement.Values.CurrentOption) == "string" then
@@ -8030,19 +8030,19 @@ function Starlight:CreateWindow(WindowSettings)
 							--// SUBSECTION : display updation and methods
 
 							function NestedElement:truncate()
-								NestedElement.LibInstances[1].Header.Size = UDim2.new(1, -18, 0, 20)
+								NestedElement.Instances[1].Header.Size = UDim2.new(1, -18, 0, 20)
 								if
-									NestedElement.LibInstances[1].Header.TextBounds.X
-									<= NestedElement.LibInstances[1].Header.AbsoluteSize.X
+									NestedElement.Instances[1].Header.TextBounds.X
+									<= NestedElement.Instances[1].Header.AbsoluteSize.X
 								then
-									NestedElement.LibInstances[1].Truncater.Visible = false
+									NestedElement.Instances[1].Truncater.Visible = false
 									return
 								end
-								NestedElement.LibInstances[1].Header.Size = UDim2.new(1, -26, 0, 20)
-								NestedElement.LibInstances[1].Truncater.Visible = true
+								NestedElement.Instances[1].Header.Size = UDim2.new(1, -26, 0, 20)
+								NestedElement.Instances[1].Truncater.Visible = true
 							end
 
-							NestedElement.LibInstances[1].Header:GetPropertyChangedSignal("Text"):Connect(function()
+							NestedElement.Instances[1].Header:GetPropertyChangedSignal("Text"):Connect(function()
 								NestedElement:truncate()
 							end)
 
@@ -8090,7 +8090,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 							local function ToggleOption(option)
 								if not NestedElement.Values.MultipleOptions then
-									for i, v in pairs(NestedElement.LibInstances[2].List:GetChildren()) do
+									for i, v in pairs(NestedElement.Instances[2].List:GetChildren()) do
 										if v.ClassName == "Frame" and v ~= option then
 											Deactivate(v)
 											NestedElement.Values.CurrentOption = {}
@@ -8103,12 +8103,12 @@ function Starlight:CreateWindow(WindowSettings)
 									local Success, Response = pcall(function()
 										table.insert(NestedElement.Values.CurrentOption, option.header.Text)
 										NestedElement.Values.Callback(NestedElement.Values.CurrentOption)
-										NestedElement.LibInstances[1].Header.Text =
+										NestedElement.Instances[1].Header.Text =
 											Table.Unpack(NestedElement.Values.CurrentOption)
 									end)
 
 									if not Success then
-										Parent.LibInstance.Header.Text = "Callback Error"
+										Parent.Instance.Header.Text = "Callback Error"
 										warn(
 											`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 										)
@@ -8121,7 +8121,7 @@ function Starlight:CreateWindow(WindowSettings)
 											})
 										end
 										wait(0.5)
-										Parent.LibInstance.Header.Text = ElementSettings.Name
+										Parent.Instance.Header.Text = ElementSettings.Name
 									end
 								else
 									if
@@ -8135,12 +8135,12 @@ function Starlight:CreateWindow(WindowSettings)
 									local Success, Response = pcall(function()
 										Table.Remove(NestedElement.Values.CurrentOption, option.header.Text)
 										NestedElement.Values.Callback(NestedElement.Values.CurrentOption)
-										NestedElement.LibInstances[1].Header.Text =
+										NestedElement.Instances[1].Header.Text =
 											Table.Unpack(NestedElement.Values.CurrentOption)
 									end)
 
 									if not Success then
-										Parent.LibInstance.Header.Text = "Callback Error"
+										Parent.Instance.Header.Text = "Callback Error"
 										warn(
 											`Starlight Interface Suite - Callback Error | {Element.Values.Name} ({Index} {NestedIndex})`
 										)
@@ -8153,13 +8153,13 @@ function Starlight:CreateWindow(WindowSettings)
 											})
 										end
 										wait(0.5)
-										Parent.LibInstance.Header.Text = ElementSettings.Name
+										Parent.Instance.Header.Text = ElementSettings.Name
 									end
 								end
 							end
 
 							local function Refresh()
-								for i, v in pairs(NestedElement.LibInstances[2].List:GetChildren()) do
+								for i, v in pairs(NestedElement.Instances[2].List:GetChildren()) do
 									if v.ClassName == "Frame" then
 										v:Destroy()
 									end
@@ -8181,7 +8181,7 @@ function Starlight:CreateWindow(WindowSettings)
 								-- ipairs so it actually lines up correctly
 								for _, option in ipairs(NestedElement.Values.Options) do
 									local optioninstance = Resources.Elements.DropdownPopup.List.Option_TEMPLATE:Clone()
-									optioninstance.Parent = NestedElement.LibInstances[2].List
+									optioninstance.Parent = NestedElement.Instances[2].List
 									optioninstance.Name = "OPTION_" .. option
 									optioninstance.header.Text = option
 									optioninstance:SetAttribute("Active", false)
@@ -8226,26 +8226,26 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 
 							Refresh()
-							NestedElement.LibInstances[2].Size = UDim2.fromOffset(
-								math.ceil(NestedElement.LibInstances[1].AbsoluteSize.X),
-								NestedElement.LibInstances[2].Size.Y.Offset
+							NestedElement.Instances[2].Size = UDim2.fromOffset(
+								math.ceil(NestedElement.Instances[1].AbsoluteSize.X),
+								NestedElement.Instances[2].Size.Y.Offset
 							)
-							NestedElement.LibInstances[2].Position = UDim2.fromOffset(
-								math.ceil(NestedElement.LibInstances[1].AbsolutePosition.X),
-								math.ceil(NestedElement.LibInstances[1].AbsolutePosition.Y) + (135 / 2) + 30
+							NestedElement.Instances[2].Position = UDim2.fromOffset(
+								math.ceil(NestedElement.Instances[1].AbsolutePosition.X),
+								math.ceil(NestedElement.Instances[1].AbsolutePosition.Y) + (135 / 2) + 30
 							)
 
 							local preoptions = NestedElement.Values.CurrentOption
 							NestedElement.Values.CurrentOption = {}
 							for i, v in pairs(preoptions) do
-								for _, optioninstance in pairs(NestedElement.LibInstances[2].List:GetChildren()) do
+								for _, optioninstance in pairs(NestedElement.Instances[2].List:GetChildren()) do
 									if optioninstance.Name == "OPTION_" .. v then
 										ToggleOption(optioninstance)
 									end
 								end
 							end
-							NestedElement.LibInstances[1].Header.Text = Table.Unpack(NestedElement.Values.CurrentOption)
-							NestedElement.LibInstances[1].Header.PlaceholderText = NestedElement.Values.Placeholder or "--"
+							NestedElement.Instances[1].Header.Text = Table.Unpack(NestedElement.Values.CurrentOption)
+							NestedElement.Instances[1].Header.PlaceholderText = NestedElement.Values.Placeholder or "--"
 
 							if NestedElement.Values.Special == 1 then
 								local c
@@ -8277,43 +8277,43 @@ function Starlight:CreateWindow(WindowSettings)
 							end
 
 							ThemeMethods.bindTheme(
-								NestedElement.LibInstances[2],
+								NestedElement.Instances[2],
 								"BackgroundColor3",
 								"Backgrounds.Groupbox"
 							)
-							ThemeMethods.bindTheme(NestedElement.LibInstances[2].UIStroke, "Color", "Foregrounds.Dark")
+							ThemeMethods.bindTheme(NestedElement.Instances[2].UIStroke, "Color", "Foregrounds.Dark")
 							ThemeMethods.bindTheme(
-								NestedElement.LibInstances[2].Background,
+								NestedElement.Instances[2].Background,
 								"BackgroundColor3",
 								"Backgrounds.Dark"
 							)
-							for _, shadow in pairs(NestedElement.LibInstances[2].DropShadowHolder:GetChildren()) do
+							for _, shadow in pairs(NestedElement.Instances[2].DropShadowHolder:GetChildren()) do
 								ThemeMethods.bindTheme(shadow, "ImageColor3", "Miscellaneous.LighterShadow")
 							end
 							ThemeMethods.bindTheme(
-								NestedElement.LibInstances[2].List,
+								NestedElement.Instances[2].List,
 								"ScrollBarImageColor3",
 								"Foregrounds.Medium"
 							)
-							ThemeMethods.bindTheme(NestedElement.LibInstances[1], "BackgroundColor3", "Backgrounds.Dark")
-							ThemeMethods.bindTheme(NestedElement.LibInstances[1].UIStroke, "Color", "Foregrounds.Dark")
-							ThemeMethods.bindTheme(NestedElement.LibInstances[1].Icon, "ImageColor3", "Foregrounds.Light")
+							ThemeMethods.bindTheme(NestedElement.Instances[1], "BackgroundColor3", "Backgrounds.Dark")
+							ThemeMethods.bindTheme(NestedElement.Instances[1].UIStroke, "Color", "Foregrounds.Dark")
+							ThemeMethods.bindTheme(NestedElement.Instances[1].Icon, "ImageColor3", "Foregrounds.Light")
 							ThemeMethods.bindTheme(
-								NestedElement.LibInstances[1].Truncater,
+								NestedElement.Instances[1].Truncater,
 								"TextColor3",
 								"Foregrounds.Light"
 							)
-							ThemeMethods.bindTheme(NestedElement.LibInstances[1].Header, "TextColor3", "Foregrounds.Light")
+							ThemeMethods.bindTheme(NestedElement.Instances[1].Header, "TextColor3", "Foregrounds.Light")
 							ThemeMethods.bindTheme(
-								NestedElement.LibInstances[1].Header,
+								NestedElement.Instances[1].Header,
 								"PlaceholderColor3",
 								"Foregrounds.Medium"
 							)
 
 							function NestedElement:Destroy()
-								NestedElement.LibInstances[1]:Destroy()
-								NestedElement.LibInstances[2]:Destroy()
-								Parent.LibInstance.Size = UDim2.fromOffset(0, Parent.LibInstance.Size.Y.Offset - additionSize)
+								NestedElement.Instances[1]:Destroy()
+								NestedElement.Instances[2]:Destroy()
+								Parent.Instance.Size = UDim2.fromOffset(0, Parent.Instance.Size.Y.Offset - additionSize)
 								NestedElement = nil
 							end
 
@@ -8356,23 +8356,23 @@ function Starlight:CreateWindow(WindowSettings)
 									NestedElement.Values.CurrentOption = { NestedElement.Values.Options[1] }
 								end
 
-								NestedElement.LibInstances[1].Name = "DROPDOWN_" .. NestedIndex
-								NestedElement.LibInstances[2].Name = "DROPDOWN_" .. NestedIndex
+								NestedElement.Instances[1].Name = "DROPDOWN_" .. NestedIndex
+								NestedElement.Instances[2].Name = "DROPDOWN_" .. NestedIndex
 
 								Refresh()
 								local preoptions = table.clone(NestedElement.Values.CurrentOption or {})
 								NestedElement.Values.CurrentOption = {}
 								task.delay(1 / 60, function()
 									for i, v in pairs(preoptions) do
-										for _, optioninstance in pairs(NestedElement.LibInstances[2].List:GetChildren()) do
+										for _, optioninstance in pairs(NestedElement.Instances[2].List:GetChildren()) do
 											if optioninstance.Name == "OPTION_" .. v then
 												ToggleOption(optioninstance)
 											end
 										end
 									end
-									NestedElement.LibInstances[1].Header.Text =
+									NestedElement.Instances[1].Header.Text =
 										Table.Unpack(NestedElement.Values.CurrentOption)
-									NestedElement.LibInstances[1].Header.PlaceholderText = NestedElement.Values.Placeholder
+									NestedElement.Instances[1].Header.PlaceholderText = NestedElement.Values.Placeholder
 										or "--"
 								end)
 
@@ -8407,28 +8407,28 @@ function Starlight:CreateWindow(WindowSettings)
 					}
 
 					task.spawn(function()
-						Element.LibInstance = GroupboxTemplateInstance.Paragraph_TEMPLATE:Clone()
-						Element.LibInstance.Visible = true
-						Element.LibInstance.Parent = Groupbox.ParentingItem
+						Element.Instance = GroupboxTemplateInstance.Paragraph_TEMPLATE:Clone()
+						Element.Instance.Visible = true
+						Element.Instance.Parent = Groupbox.ParentingItem
 
-						Element.LibInstance.Name = "PARAGRAPH_" .. Index
-						Element.LibInstance.Header.Text = Element.Values.Name
-						Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-						if Element.LibInstance.Header.Icon.Visible == false then
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
-							Element.LibInstance.Content.UIPadding.PaddingLeft = UDim.new(0, 6)
+						Element.Instance.Name = "PARAGRAPH_" .. Index
+						Element.Instance.Header.Text = Element.Values.Name
+						Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+						if Element.Instance.Header.Icon.Visible == false then
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+							Element.Instance.Content.UIPadding.PaddingLeft = UDim.new(0, 6)
 						else
-							Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
-							Element.LibInstance.Content.UIPadding.PaddingLeft = UDim.new(0, 32)
+							Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+							Element.Instance.Content.UIPadding.PaddingLeft = UDim.new(0, 32)
 						end
-						Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+						Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 								and "rbxassetid://" .. Element.Values.Icon
 							or ""
-						Element.LibInstance.Content.Text = Element.Values.Content
+						Element.Instance.Content.Text = Element.Values.Content
 
-						ThemeMethods.bindTheme(Element.LibInstance.Header, "TextColor3", "Foregrounds.Light")
-						ThemeMethods.bindTheme(Element.LibInstance.Content, "TextColor3", "Foregrounds.Medium")
-						ThemeMethods.bindTheme(Element.LibInstance.Header.Icon, "ImageColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.Header, "TextColor3", "Foregrounds.Light")
+						ThemeMethods.bindTheme(Element.Instance.Content, "TextColor3", "Foregrounds.Medium")
+						ThemeMethods.bindTheme(Element.Instance.Header.Icon, "ImageColor3", "Foregrounds.Light")
 
 						function Element:Set(NewElementSettings, NewIndex)
 							NewIndex = NewIndex or Index
@@ -8444,39 +8444,39 @@ function Starlight:CreateWindow(WindowSettings)
 
 							Element.Values = ElementSettings
 
-							Element.LibInstance.Name = "PARAGRAPH_" .. NewIndex
-							Element.LibInstance.Header.Text = Element.Values.Name
-							Element.LibInstance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
-							if Element.LibInstance.Header.Icon.Visible == false then
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
-								Element.LibInstance.Content.UIPadding.PaddingLeft = UDim.new(0, 6)
+							Element.Instance.Name = "PARAGRAPH_" .. NewIndex
+							Element.Instance.Header.Text = Element.Values.Name
+							Element.Instance.Header.Icon.Visible = not String.IsEmptyOrNull(Element.Values.Icon)
+							if Element.Instance.Header.Icon.Visible == false then
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 6)
+								Element.Instance.Content.UIPadding.PaddingLeft = UDim.new(0, 6)
 							else
-								Element.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
-								Element.LibInstance.Content.UIPadding.PaddingLeft = UDim.new(0, 32)
+								Element.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 32)
+								Element.Instance.Content.UIPadding.PaddingLeft = UDim.new(0, 32)
 							end
-							Element.LibInstance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
+							Element.Instance.Header.Icon.Image = not String.IsEmptyOrNull(Element.Values.Icon)
 									and "rbxassetid://" .. Element.Values.Icon
 								or ""
-							Element.LibInstance.Content.Text = Element.Values.Content
+							Element.Instance.Content.Text = Element.Values.Content
 
 							Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex].Elements[NewIndex].Values =
 								ElementSettings
 						end
 
 						function Element:Lock(Reason)
-							Element.LibInstance.Lock_Overlay.Visible = true
-							Element.LibInstance.Interactable = false
-							Element.LibInstance.Lock_Overlay.Header.Text = Reason or ""
+							Element.Instance.Lock_Overlay.Visible = true
+							Element.Instance.Interactable = false
+							Element.Instance.Lock_Overlay.Header.Text = Reason or ""
 						end
 
 						function Element:Unlock()
-							Element.LibInstance.Lock_Overlay.Visible = false
-							Element.LibInstance.Interactable = true
-							Element.LibInstance.Lock_Overlay.Header.Text = ""
+							Element.Instance.Lock_Overlay.Visible = false
+							Element.Instance.Interactable = true
+							Element.Instance.Lock_Overlay.Header.Text = ""
 						end
 
 						function Element:Destroy()
-							Element.LibInstance:Destroy()
+							Element.Instance:Destroy()
 							if Element.NestedElements ~= nil then
 								for _, nestedElement in pairs(Element.NestedElements) do
 									nestedElement:Destroy()
@@ -8492,7 +8492,7 @@ function Starlight:CreateWindow(WindowSettings)
 
 				--// ENDSUBSECTION
 
-				Groupbox.LibInstance.Parent = Tab.LibInstances.Page["Column_" .. GroupboxSettings.Column]
+				Groupbox.Instance.Parent = Tab.Instances.Page["Column_" .. GroupboxSettings.Column]
 				Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex] = Groupbox
 				return Starlight.Window.TabSections[Name].Tabs[TabIndex].Groupboxes[GroupIndex]
 			end
@@ -9607,9 +9607,9 @@ function Starlight:CreateWindow(WindowSettings)
 				local warning = instance:CreateLabel({
 					Name = "! DANGER ZONE !",
 				}, "__prebuiltConfigDangerWarning")
-				warning.LibInstance.Header.TextXAlignment = Enum.TextXAlignment.Center
-				warning.LibInstance.Header.Size = UDim2.new(1, 0, 0, warning.LibInstance.Header.Size.Y.Offset)
-				warning.LibInstance.Header.UIPadding.PaddingLeft = UDim.new(0, 0)
+				warning.Instance.Header.TextXAlignment = Enum.TextXAlignment.Center
+				warning.Instance.Header.Size = UDim2.new(1, 0, 0, warning.Instance.Header.Size.Y.Offset)
+				warning.Instance.Header.UIPadding.PaddingLeft = UDim.new(0, 0)
 
 				instance:CreateButton({
 					Name = "Clear Autoload",
@@ -9684,12 +9684,12 @@ function Starlight:CreateWindow(WindowSettings)
 
 			--// ENDSUBSECTION
 
-			Tab.LibInstances.Button.Parent = Starlight.Window.TabSections[Name].LibInstance
+			Tab.Instances.Button.Parent = Starlight.Window.TabSections[Name].Instance
 			Starlight.Window.TabSections[Name].Tabs[TabIndex] = Tab
 			return Starlight.Window.TabSections[Name].Tabs[TabIndex]
 		end
 
-		TabSection.LibInstance.Parent = navigation
+		TabSection.Instance.Parent = navigation
 		Starlight.Window.TabSections[Name] = TabSection
 		return Starlight.Window.TabSections[Name]
 
