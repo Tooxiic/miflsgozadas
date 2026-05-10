@@ -1478,7 +1478,9 @@ local function AddToolTip(InfoStr, HoverInstance)
 
 	local tooltip = Instance.new("Frame")
 	tooltip.ZIndex = 300
-	tooltip.Parent = Starlight.Instance.Tooltips
+	pcall(function()
+		tooltip.Parent = Starlight.Instance.Tooltips
+	end)
 	tooltip.Name = HoverInstance.Name
 
 	label.ZIndex = tooltip.ZIndex + 1
@@ -5329,12 +5331,13 @@ function Starlight:CreateWindow(WindowSettings)
 									Set(Element.Values.CurrentValue)
 								end)
 							end
+							pcall(function()
+								tooltips[i] = AddToolTip(Element.Values.Tooltip or "", ElementInstance)
 
-							tooltips[i] = AddToolTip(Element.Values.Tooltip or "", ElementInstance)
+								ElementInstance.Parent = Groupbox.ParentingItem
 
-							ElementInstance.Parent = Groupbox.ParentingItem
-
-							Element.Instance = ElementInstance.Visible and ElementInstance or Element.Instance
+								Element.Instance = ElementInstance.Visible and ElementInstance or Element.Instance
+							end)
 						end
 
 						function Element:Set(NewElementSettings, NewIndex)
