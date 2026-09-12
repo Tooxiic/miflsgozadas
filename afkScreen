@@ -1,44 +1,4 @@
---[[
-    ═══════════════════════════════════════════════════════════════
-    KITTY AFK SCREEN MODULE
-    ═══════════════════════════════════════════════════════════════
-    Módulo reutilizável para tela de AFK com animação moderna,
-    neve, rastro de cometa e controle de renderização 3D.
-
-    Hospede este arquivo no GitHub e utilize diretamente no seu
-    script principal através de:
-
-    ---------------------------------------------------------------
-    EXEMPLO 1: CONTROLE MANUAL DO RENDER 3D (Como solicitado)
-    ---------------------------------------------------------------
-    local UserInputService = game:GetService("UserInputService")
-    local RunService = game:GetService("RunService")
-
-    local afkScreen = loadstring(game:HttpGet("https://raw.githubusercontent.com/SEU_USER/SEU_REPO/main/AFK_Screen.luau"))()
-
-    -- Disparado assim que a tela de fundo preta termina de carregar (100% opaca)
-    afkScreen:Connect(function()
-        RunService:Set3dRenderingEnabled(false) -- desativa o render 3D
-    end)
-
-    -- Disparado quando o usuário clica ou pressiona qualquer tecla para voltar
-    afkScreen.OnStopped:Connect(function()
-        RunService:Set3dRenderingEnabled(true) -- reativa o render 3D
-    end)
-
-    -- Inicia o AFK ao perder foco da janela (minimizar, alt-tab, etc)
-    UserInputService.WindowFocusReleased:Connect(function()
-        afkScreen.startAFK()
-    end)
-
-    ---------------------------------------------------------------
-    EXEMPLO 2: MODO AUTOMÁTICO SIMPLIFICADO
-    ---------------------------------------------------------------
-    local afkScreen = loadstring(game:HttpGet("https://raw.githubusercontent.com/SEU_USER/SEU_REPO/main/AFK_Screen.luau"))()
-    afkScreen:SetAuto3DRender(true)       -- desativa e reativa o render 3D automaticamente!
-    afkScreen:SetAutoWindowFocus(true)    -- ativa o AFK ao perder foco automaticamente!
-    ═══════════════════════════════════════════════════════════════
-]]
+local passedArg = ...
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -54,6 +14,16 @@ if env.__KITTY_AFK and typeof(env.__KITTY_AFK.Destroy) == "function" then
     pcall(function()
         env.__KITTY_AFK:Destroy()
     end)
+end
+
+local function generateRandomString(length: number): string
+    local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local result = table.create(length or 12)
+    for i = 1, (length or 12) do
+        local randIndex = math.random(1, #chars)
+        result[i] = string.sub(chars, randIndex, randIndex)
+    end
+    return table.concat(result)
 end
 
 local function getGuiParent(): Instance
@@ -94,7 +64,14 @@ end
 local afkScreen = {}
 afkScreen.__index = afkScreen
 
-afkScreen.Version = "1.0.0"
+-- Gerencia uiUtils passado ou existente
+local uiUtils = (typeof(passedArg) == "table" and passedArg) or env.uiUtils or {}
+afkScreen.uiUtils = uiUtils
+if typeof(passedArg) == "table" and passedArg.Window then
+    afkScreen.Window = passedArg.Window
+end
+
+afkScreen.Version = "2.0.0"
 afkScreen.Auto3DRendering = false
 afkScreen.AutoWindowFocus = false
 afkScreen.IsAFK = false
@@ -788,6 +765,12 @@ local function stopAFK()
     if afkScreen.Auto3DRendering then
         set3DRendering(true)
     end
+
+    -- Reexibe o botão flutuante da Obsidian ao sair do AFK
+    if uiUtils.ToggleGui then
+        uiUtils.ToggleGui.Enabled = true
+    end
+
     onStoppedEvent:Fire()
     
     local fadeTime = 0.35
@@ -841,6 +824,11 @@ local function startAFK(optionalCallback)
     if isAfk then return end
     isAfk = true
     afkScreen.IsAFK = true
+
+    -- Esconde o botão flutuante enquanto estiver no AFK para deixar a tela limpa
+    if uiUtils.ToggleGui then
+        uiUtils.ToggleGui.Enabled = false
+    end
 
     if typeof(optionalCallback) == "function" then
         local connection
@@ -904,8 +892,162 @@ local function setAutoWindowFocus(enable: boolean)
 end
 
 -- ══════════════════════════════════════════════════════════════════
+-- ── Floating Draggable Toggle Button (Para a Obsidian) ──
+-- ══════════════════════════════════════════════════════════════════
+uiUtils.ToggleGui = Instance.new("ScreenGui")
+uiUtils.ToggleGui.Name = generateRandomString(math.random(8, 16))
+uiUtils.ToggleGui.ResetOnSpawn = false
+if gethui then
+    uiUtils.ToggleGui.Parent = gethui()
+else
+    local CoreGui = game:GetService("CoreGui")
+    uiUtils.ToggleGui.Parent = CoreGui:FindFirstChild("RobloxGui") and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+end
+
+uiUtils.ToggleBtn = Instance.new("ImageButton")
+uiUtils.ToggleBtn.Name = "ToggleBtn"
+uiUtils.ToggleBtn.Parent = uiUtils.ToggleGui
+uiUtils.ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
+uiUtils.ToggleBtn.Position = UDim2.new(1, -80, 0, 20)
+uiUtils.ToggleBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+uiUtils.ToggleBtn.Active = true
+uiUtils.ToggleBtn.Draggable = false
+uiUtils.ToggleBtn.ImageTransparency = 1
+
+local path, asset = "kitty/Kittyy.png", nil
+if writefile and isfile and getcustomasset then
+    pcall(function()
+        if makefolder and isfolder and not isfolder("kitty") then
+            pcall(makefolder, "kitty")
+        end
+        if not isfile(path) then
+            writefile(path, game:HttpGet("https://kittyhub.org/images/KittyLogo.png"))
+        end
+        asset = getcustomasset(path)
+    end)
+end
+uiUtils.ToggleBtn.Image = asset or "rbxassetid://108438928597855"
+uiUtils.ToggleBtn.ScaleType = Enum.ScaleType.Fit
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = uiUtils.ToggleBtn
+
+uiUtils.BorderFrame = Instance.new("Frame")
+uiUtils.BorderFrame.Name = generateRandomString(math.random(8, 16))
+uiUtils.BorderFrame.Size = UDim2.new(1, 6, 1, 6)
+uiUtils.BorderFrame.Position = UDim2.new(0, -3, 0, -3)
+uiUtils.BorderFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+uiUtils.BorderFrame.BorderSizePixel = 0
+uiUtils.BorderFrame.ZIndex = uiUtils.ToggleBtn.ZIndex - 1
+uiUtils.BorderFrame.Parent = uiUtils.ToggleBtn
+
+local borderCorner = Instance.new("UICorner")
+borderCorner.CornerRadius = UDim.new(0, 11)
+borderCorner.Parent = uiUtils.BorderFrame
+
+local borderGradient = Instance.new("UIGradient")
+borderGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(228, 22, 86)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
+})
+borderGradient.Rotation = 0
+borderGradient.Parent = uiUtils.BorderFrame
+
+local angle = 0
+local toggleBtnRotationConn = RunService.Heartbeat:Connect(function(dt)
+    angle = (angle + dt * 90) % 360
+    borderGradient.Rotation = angle
+end)
+
+uiUtils.BorderFrame.BackgroundTransparency = 1
+TweenService:Create(uiUtils.BorderFrame, TweenInfo.new(2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+    BackgroundTransparency = 0,
+}):Play()
+
+TweenService:Create(uiUtils.ToggleBtn, TweenInfo.new(2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+    ImageTransparency = 0,
+}):Play()
+
+-- Dragging logic
+local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
+local dragged = false
+
+local toggleInputBeganConn = uiUtils.ToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragged = false
+        dragStart = input.Position
+        startPos = uiUtils.ToggleBtn.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+local toggleInputChangedConn = uiUtils.ToggleBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+local globalInputChangedConn = UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        if delta.Magnitude > 5 then
+            dragged = true
+        end
+        uiUtils.ToggleBtn.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Quando clicado (sem arrastar), alterna a visibilidade da janela da Obsidian (uiUtils.Window:Toggle())
+local debounce = false
+local toggleInputEndedConn = uiUtils.ToggleBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if not dragged then
+            if not debounce then
+                debounce = true
+                if uiUtils.Window and typeof(uiUtils.Window.Toggle) == "function" then
+                    uiUtils.Window:Toggle()
+                elseif afkScreen.Window and typeof(afkScreen.Window.Toggle) == "function" then
+                    afkScreen.Window:Toggle()
+                end
+                task.delay(0.4, function()
+                    debounce = false
+                end)
+            end
+        end
+        dragged = false
+    end
+end)
+
+-- Espelha as referências do botão em afkScreen
+afkScreen.ToggleGui = uiUtils.ToggleGui
+afkScreen.ToggleBtn = uiUtils.ToggleBtn
+afkScreen.BorderFrame = uiUtils.BorderFrame
+
+-- ══════════════════════════════════════════════════════════════════
 -- MÉTODOS PÚBLICOS DA API
 -- ══════════════════════════════════════════════════════════════════
+
+-- Permite vincular a Janela da Obsidian a qualquer momento
+function afkScreen.SetWindow(...)
+    local arg1, arg2 = ...
+    local win = (typeof(arg1) == "table" and arg1) or arg2
+    uiUtils.Window = win
+    afkScreen.Window = win
+    return afkScreen
+end
 
 -- Conecta diretamente ao evento de conclusão do carregamento do background
 function afkScreen.Connect(...)
@@ -978,6 +1120,18 @@ function afkScreen.SetAutoWindowFocus(...)
     return afkScreen
 end
 
+function afkScreen.SetToggleButtonVisible(...)
+    local arg1, arg2 = ...
+    local visible = typeof(arg1) == "boolean" and arg1 or arg2
+    if visible == nil then visible = true end
+    if uiUtils.ToggleGui then
+        uiUtils.ToggleGui.Enabled = visible
+    end
+    return afkScreen
+end
+afkScreen.ShowToggleButton = function() return afkScreen.SetToggleButtonVisible(true) end
+afkScreen.HideToggleButton = function() return afkScreen.SetToggleButtonVisible(false) end
+
 function afkScreen.Destroy()
     stopAFK()
     set3DRendering(true)
@@ -1001,6 +1155,34 @@ function afkScreen.Destroy()
     if viewportConnection then
         viewportConnection:Disconnect()
         viewportConnection = nil
+    end
+    
+    -- Limpa conexões e instâncias do botão flutuante da Obsidian
+    if toggleBtnRotationConn then
+        toggleBtnRotationConn:Disconnect()
+        toggleBtnRotationConn = nil
+    end
+    if toggleInputBeganConn then
+        toggleInputBeganConn:Disconnect()
+        toggleInputBeganConn = nil
+    end
+    if toggleInputChangedConn then
+        toggleInputChangedConn:Disconnect()
+        toggleInputChangedConn = nil
+    end
+    if globalInputChangedConn then
+        globalInputChangedConn:Disconnect()
+        globalInputChangedConn = nil
+    end
+    if toggleInputEndedConn then
+        toggleInputEndedConn:Disconnect()
+        toggleInputEndedConn = nil
+    end
+    
+    if uiUtils.ToggleGui then
+        pcall(function()
+            uiUtils.ToggleGui:Destroy()
+        end)
     end
     
     if screenGui then
