@@ -817,8 +817,10 @@ local function stopAFK()
     end
 
     -- Reexibe o botão flutuante da Obsidian ao sair do AFK (se não foi desativado pelo usuário)
-    if uiUtils.ToggleGui and afkScreen.ToggleButtonVisible ~= false then
-        uiUtils.ToggleGui.Enabled = true
+    if afkScreen.ToggleButtonVisible ~= false then
+        if uiUtils.ToggleGui then uiUtils.ToggleGui.Enabled = true end
+        if uiUtils.ToggleBtn then uiUtils.ToggleBtn.Visible = true end
+        if uiUtils.BorderFrame then uiUtils.BorderFrame.Visible = true end
     end
 
     onStoppedEvent:Fire()
@@ -876,9 +878,9 @@ local function startAFK(optionalCallback)
     afkScreen.IsAFK = true
 
     -- Esconde o botão flutuante enquanto estiver no AFK para deixar a tela limpa
-    if uiUtils.ToggleGui then
-        uiUtils.ToggleGui.Enabled = false
-    end
+    if uiUtils.ToggleGui then uiUtils.ToggleGui.Enabled = false end
+    if uiUtils.ToggleBtn then uiUtils.ToggleBtn.Visible = false end
+    if uiUtils.BorderFrame then uiUtils.BorderFrame.Visible = false end
 
     if typeof(optionalCallback) == "function" then
         local connection
@@ -944,6 +946,12 @@ end
 -- ══════════════════════════════════════════════════════════════════
 -- ── Floating Draggable Toggle Button (Para a Obsidian) ──
 -- ══════════════════════════════════════════════════════════════════
+if uiUtils.ToggleGui and typeof(uiUtils.ToggleGui) == "Instance" then
+    pcall(function()
+        uiUtils.ToggleGui:Destroy()
+    end)
+end
+
 uiUtils.ToggleGui = Instance.new("ScreenGui")
 uiUtils.ToggleGui.Name = generateRandomString(math.random(8, 16))
 uiUtils.ToggleGui.ResetOnSpawn = false
@@ -1175,9 +1183,22 @@ function afkScreen.SetToggleButtonVisible(...)
     local visible = typeof(arg1) == "boolean" and arg1 or arg2
     if visible == nil then visible = true end
     afkScreen.ToggleButtonVisible = visible
-    if uiUtils.ToggleGui then
-        uiUtils.ToggleGui.Enabled = visible
+
+    local tg = uiUtils.ToggleGui or afkScreen.ToggleGui
+    if tg and typeof(tg) == "Instance" then
+        tg.Enabled = visible
     end
+
+    local tb = uiUtils.ToggleBtn or afkScreen.ToggleBtn
+    if tb and typeof(tb) == "Instance" then
+        tb.Visible = visible
+    end
+
+    local bf = uiUtils.BorderFrame or afkScreen.BorderFrame
+    if bf and typeof(bf) == "Instance" then
+        bf.Visible = visible
+    end
+
     return afkScreen
 end
 afkScreen.ShowToggleButton = function() return afkScreen.SetToggleButtonVisible(true) end
