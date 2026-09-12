@@ -1,3 +1,53 @@
+--[[
+    ═══════════════════════════════════════════════════════════════
+    KITTY AFK SCREEN MODULE + OBSIDIAN FLOATING TOGGLE BUTTON
+    ═══════════════════════════════════════════════════════════════
+    Módulo completo contendo:
+    1. Tela de AFK completa (animação moderna, neve, timer, cometa, etc.)
+    2. Botão flutuante arrastável oficial da Obsidian (com gradiente giratório)
+    3. Controle de render 3D e ciclo de vida integrado.
+
+    ---------------------------------------------------------------
+    EXEMPLO DE USO NO SCRIPT PRINCIPAL:
+    ---------------------------------------------------------------
+    local UserInputService = game:GetService("UserInputService")
+    local RunService = game:GetService("RunService")
+
+    local uiUtils = {}
+    uiUtils.Window = Library:CreateWindow({
+        Title = "Kitty Hub",
+        Footer = "v" .. tostring(getgenv().version or 1.0) .. " - " .. gameName,
+        Icon = 108438928597855,
+        NotifySide = "Right",
+        ShowCustomCursor = false,
+        SidebarCompacted = true,
+        EnableSidebarResize = true,
+        Font = Enum.Font.Ubuntu,
+        AutoShow = true,
+        CornerRadius = 10,
+        ToggleKeybind = Enum.KeyCode.X,
+    })
+
+    -- Carrega o AFK screen passando uiUtils (o botão já é criado e configurado automaticamente!)
+    local afkScreen = loadstring(game:HttpGet("https://raw.githubusercontent.com/SEU_USER/SEU_REPO/main/AFK_Screen.luau"))(uiUtils)
+
+    -- 1. Desativa o render 3D quando o fundo preto do AFK terminar de carregar (100% opaco):
+    afkScreen:Connect(function()
+        RunService:Set3dRenderingEnabled(false)
+    end)
+
+    -- 2. Reativa o render 3D ao voltar do AFK:
+    afkScreen.OnStopped:Connect(function()
+        RunService:Set3dRenderingEnabled(true)
+    end)
+
+    -- 3. Abre a tela de AFK quando perder o foco da janela:
+    UserInputService.WindowFocusReleased:Connect(function()
+        afkScreen.startAFK()
+    end)
+    ═══════════════════════════════════════════════════════════════
+]]
+
 local passedArg = ...
 
 local Players = game:GetService("Players")
@@ -766,8 +816,8 @@ local function stopAFK()
         set3DRendering(true)
     end
 
-    -- Reexibe o botão flutuante da Obsidian ao sair do AFK
-    if uiUtils.ToggleGui then
+    -- Reexibe o botão flutuante da Obsidian ao sair do AFK (se não foi desativado pelo usuário)
+    if uiUtils.ToggleGui and afkScreen.ToggleButtonVisible ~= false then
         uiUtils.ToggleGui.Enabled = true
     end
 
@@ -1124,6 +1174,7 @@ function afkScreen.SetToggleButtonVisible(...)
     local arg1, arg2 = ...
     local visible = typeof(arg1) == "boolean" and arg1 or arg2
     if visible == nil then visible = true end
+    afkScreen.ToggleButtonVisible = visible
     if uiUtils.ToggleGui then
         uiUtils.ToggleGui.Enabled = visible
     end
