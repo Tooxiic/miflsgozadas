@@ -946,7 +946,8 @@ end
 
 
 -- ══════════════════════════════════════════════════════════════════
--- ── Notch Toggle Button (Dynamic Island Redesign para Obsidian) ──
+-- ── Notch Toggle Button v2.1 (Dynamic Island para Obsidian) ──────
+-- ── Contorno Rotativo Rosa/Branco + Motor de Direção Dinâmica ────
 -- ══════════════════════════════════════════════════════════════════
 if uiUtils.ToggleGui and typeof(uiUtils.ToggleGui) == "Instance" then
 	pcall(function()
@@ -954,12 +955,38 @@ if uiUtils.ToggleGui and typeof(uiUtils.ToggleGui) == "Instance" then
 	end)
 end
 
+-- Limpa ScreenGuis anteriores com ToggleBtn
+local function cleanupExistingToggleGuis()
+	local containers = {}
+	if gethui then pcall(function() table.insert(containers, gethui()) end) end
+	pcall(function()
+		local cg = game:GetService("CoreGui")
+		table.insert(containers, cg)
+		local rg = cg:FindFirstChild("RobloxGui")
+		if rg then table.insert(containers, rg) end
+	end)
+	pcall(function()
+		if LocalPlayer:FindFirstChild("PlayerGui") then
+			table.insert(containers, LocalPlayer.PlayerGui)
+		end
+	end)
+
+	for _, c in ipairs(containers) do
+		for _, child in ipairs(c:GetChildren()) do
+			if child:IsA("ScreenGui") and (child.Name == "KittyNotchGui" or child:FindFirstChild("ToggleBtn", true)) then
+				pcall(function() child:Destroy() end)
+			end
+		end
+	end
+end
+cleanupExistingToggleGuis()
+
 local MarketplaceService = game:GetService("MarketplaceService")
 local Stats = game:GetService("Stats")
 
 -- Constantes Visuais do Notch
 local NOTCH_COLOR_BG = Color3.fromRGB(15, 15, 19)
-local NOTCH_COLOR_STROKE = Color3.fromRGB(60, 55, 72)
+local NOTCH_COLOR_STROKE_OFF = Color3.fromRGB(60, 55, 72)
 local NOTCH_COLOR_TEXT_WHITE = Color3.fromRGB(255, 255, 255)
 local NOTCH_COLOR_TEXT_MUTED = Color3.fromRGB(140, 140, 152)
 local NOTCH_COLOR_TEXT_TAG = Color3.fromRGB(225, 155, 185)
@@ -968,7 +995,42 @@ local NOTCH_COLOR_HINT = Color3.fromRGB(235, 140, 175)
 
 local NOTCH_MIN_SIZE = UDim2.new(0, 215, 0, 38)
 local NOTCH_EXP_SIZE = UDim2.new(0, 440, 0, 165)
-local NOTCH_DEFAULT_POS = UDim2.new(0.5, 0, 0, 10)
+
+-- ══════════════════════════════════════════════════════════════════
+-- Presets de Direção e Posição (6 Presets)
+-- ══════════════════════════════════════════════════════════════════
+local NOTCH_PRESETS = {
+	["Top-Left"] = {
+		Position = UDim2.new(0, 15, 0, 10),
+		AnchorPoint = Vector2.new(0, 0),
+		Description = "Expande para Baixo e Direita",
+	},
+	["Top-Center"] = {
+		Position = UDim2.new(0.5, 0, 0, 10),
+		AnchorPoint = Vector2.new(0.5, 0),
+		Description = "Expande para Baixo (Centralizado)",
+	},
+	["Top-Right"] = {
+		Position = UDim2.new(1, -15, 0, 10),
+		AnchorPoint = Vector2.new(1, 0),
+		Description = "Expande para Baixo e Esquerda",
+	},
+	["Bottom-Left"] = {
+		Position = UDim2.new(0, 15, 1, -10),
+		AnchorPoint = Vector2.new(0, 1),
+		Description = "Expande para Cima e Direita",
+	},
+	["Bottom-Center"] = {
+		Position = UDim2.new(0.5, 0, 1, -10),
+		AnchorPoint = Vector2.new(0.5, 1),
+		Description = "Expande para Cima (Centralizado)",
+	},
+	["Bottom-Right"] = {
+		Position = UDim2.new(1, -15, 1, -10),
+		AnchorPoint = Vector2.new(1, 1),
+		Description = "Expande para Cima e Esquerda",
+	},
+}
 
 -- Obtém Asset da Kitty
 local kittyToggleAsset = ASSET_HELLO_KITTY or "rbxassetid://123770965867756"
@@ -1011,11 +1073,14 @@ else
 end
 
 -- Container Principal do Notch (ToggleBtn compatível)
+local currentPresetName = "Top-Center"
+local defaultPreset = NOTCH_PRESETS[currentPresetName]
+
 local notchFrame = Instance.new("Frame")
 notchFrame.Name = "ToggleBtn"
 notchFrame.Size = NOTCH_MIN_SIZE
-notchFrame.Position = NOTCH_DEFAULT_POS
-notchFrame.AnchorPoint = Vector2.new(0.5, 0)
+notchFrame.Position = defaultPreset.Position
+notchFrame.AnchorPoint = defaultPreset.AnchorPoint
 notchFrame.BackgroundColor3 = NOTCH_COLOR_BG
 notchFrame.BackgroundTransparency = 0.12
 notchFrame.BorderSizePixel = 0
@@ -1028,12 +1093,54 @@ local notchCorner = Instance.new("UICorner")
 notchCorner.CornerRadius = UDim.new(0, 19)
 notchCorner.Parent = notchFrame
 
+-- Stroke com Gradiente Rotativo Rosa & Branco (#FFFFFF, #FF77A9, #E41656)
 local notchStroke = Instance.new("UIStroke")
-notchStroke.Color = NOTCH_COLOR_STROKE
-notchStroke.Thickness = 1.2
-notchStroke.Transparency = 0.35
+notchStroke.Name = "NotchStroke"
+notchStroke.Thickness = 1.35
+notchStroke.Color = Color3.fromRGB(255, 255, 255)
 notchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 notchStroke.Parent = notchFrame
+
+local borderGradient = Instance.new("UIGradient")
+borderGradient.Name = "BorderGradient"
+borderGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),     -- Branco
+	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 119, 169)),  -- Rosa Claro (#FF77A9)
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(228, 22, 86)),     -- Rosa Intenso (#E41656)
+	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 119, 169)),  -- Rosa Claro (#FF77A9)
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),     -- Branco
+})
+borderGradient.Rotation = 0
+borderGradient.Parent = notchStroke
+
+-- Animação Contínua da Rotação do Gradiente
+local borderOutlineEnabled = true
+local gradientAngle = 0
+local borderRotationConn = RunService.Heartbeat:Connect(function(dt)
+	if borderOutlineEnabled and borderGradient and borderGradient.Parent then
+		gradientAngle = (gradientAngle + dt * 100) % 360
+		borderGradient.Rotation = gradientAngle
+	end
+end)
+
+local function setBorderOutlineEnabled(enabled: boolean)
+	borderOutlineEnabled = (enabled == true)
+	afkScreen.BorderOutlineEnabled = borderOutlineEnabled
+	if borderGradient then
+		borderGradient.Enabled = borderOutlineEnabled
+	end
+	if notchStroke then
+		if borderOutlineEnabled then
+			notchStroke.Color = Color3.fromRGB(255, 255, 255)
+			notchStroke.Thickness = 1.35
+			notchStroke.Transparency = 0
+		else
+			notchStroke.Color = NOTCH_COLOR_STROKE_OFF
+			notchStroke.Thickness = 1.2
+			notchStroke.Transparency = 0.35
+		end
+	end
+end
 
 local notchScale = Instance.new("UIScale")
 notchScale.Scale = 1
@@ -1054,7 +1161,7 @@ interactionBtn.Parent = notchFrame
 -- ------------------------------------------------------------------------------
 local minimizedView = Instance.new("Frame")
 minimizedView.Name = "MinimizedView"
-minimizedView.Size = UDim2.new(1, 0, 0, 38)
+minimizedView.Size = UDim2.new(1, 0, 1, 0)
 minimizedView.Position = UDim2.new(0, 0, 0, 0)
 minimizedView.BackgroundTransparency = 1
 minimizedView.ZIndex = 110
@@ -1199,7 +1306,7 @@ timerSubLabel.ZIndex = 125
 timerSubLabel.Parent = expandedView
 
 -- ------------------------------------------------------------------------------
--- Middle Row: FPS & Ping Stats (Card Dividers com Linhas Verdes de Destaque)
+-- Middle Row: FPS & Ping Stats (Card Dividers)
 -- ------------------------------------------------------------------------------
 local statsContainer = Instance.new("Frame")
 statsContainer.Name = "StatsContainer"
@@ -1324,7 +1431,7 @@ hintLabel.ZIndex = 128
 hintLabel.Parent = expandedView
 
 -- ==============================================================================
--- Lógica de Animações do Notch
+-- Lógica de Animações do Notch (Direction-Aware)
 -- ==============================================================================
 local isNotchExpanded = false
 local isNotchAnimating = false
@@ -1354,7 +1461,7 @@ local function expandNotch()
 	isNotchAnimating = true
 	isNotchExpanded = true
 
-	-- Pop-out Bounce (1.0 -> 1.05 -> 1.0)
+	-- Pop-out Bounce respeitando o AnchorPoint natural
 	TweenService:Create(notchScale, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 		Scale = 1.05,
 	}):Play()
@@ -1417,12 +1524,51 @@ local function collapseNotch()
 end
 
 -- ==============================================================================
--- Handlers de Interação & Arraste Suave (Draggable Support)
+-- Motor de Presets & Aplicação de Posição
 -- ==============================================================================
+local function applyPreset(...: any)
+	local args = { ... }
+	local presetName = (typeof(args[1]) == "string" and args[1]) or (typeof(args[2]) == "string" and args[2])
+	local animate = (typeof(args[2]) == "boolean" and args[2]) or (typeof(args[3]) == "boolean" and args[3])
+	if not presetName then return false end
+
+	local preset = NOTCH_PRESETS[presetName]
+	if not preset then
+		warn("[afkScreen.SetPreset] Preset desconhecido: " .. tostring(presetName))
+		return false
+	end
+
+	currentPresetName = presetName
+	afkScreen.CurrentPreset = presetName
+
+	if isNotchExpanded then
+		collapseNotch()
+	end
+
+	notchFrame.AnchorPoint = preset.AnchorPoint
+
+	if animate ~= false then
+		TweenService:Create(notchFrame, TweenInfo.new(0.38, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
+			Position = preset.Position,
+		}):Play()
+	else
+		notchFrame.Position = preset.Position
+	end
+	return true
+end
+
+-- ==============================================================================
+-- Handlers de Interação & Arraste Suave com Motor de Direção Dinâmica
+-- ==============================================================================
+local notchDraggableEnabled = true
+local function setDraggableEnabled(enabled: boolean)
+	notchDraggableEnabled = (enabled == true)
+end
+
 local notchDragging = false
 local notchDragged = false
-local notchDragStart = nil
-local notchStartPos = nil
+local notchDragStartMouse = nil
+local notchDragStartAbsPos = nil
 local notchDragInput = nil
 
 local function toggleObsidianWindow()
@@ -1439,16 +1585,21 @@ end
 
 local notchInputBeganConn = interactionBtn.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		notchDragging = true
-		notchDragged = false
-		notchDragStart = input.Position
-		notchStartPos = notchFrame.Position
+		if notchDraggableEnabled then
+			notchDragging = true
+			notchDragged = false
+			notchDragStartMouse = Vector2.new(input.Position.X, input.Position.Y)
+			notchDragStartAbsPos = notchFrame.AbsolutePosition
 
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				notchDragging = false
-			end
-		end)
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					notchDragging = false
+				end
+			end)
+		else
+			notchDragging = false
+			notchDragged = false
+		end
 	end
 end)
 
@@ -1459,23 +1610,97 @@ local notchInputChangedConn = interactionBtn.InputChanged:Connect(function(input
 end)
 
 local notchGlobalInputConn = UserInputService.InputChanged:Connect(function(input)
-	if input == notchDragInput and notchDragging then
-		local delta = input.Position - notchDragStart
+	if input == notchDragInput and notchDragging and notchDragStartMouse and notchDragStartAbsPos then
+		local currentMouse = Vector2.new(input.Position.X, input.Position.Y)
+		local delta = currentMouse - notchDragStartMouse
+
 		if delta.Magnitude > 6 then
 			notchDragged = true
-			notchFrame.Position = UDim2.new(
-				notchStartPos.X.Scale,
-				notchStartPos.X.Offset + delta.X,
-				notchStartPos.Y.Scale,
-				notchStartPos.Y.Offset + delta.Y
-			)
+
+			local vp = (Camera and Camera.ViewportSize) or Vector2.new(1920, 1080)
+			local curW = notchFrame.AbsoluteSize.X
+			local curH = notchFrame.AbsoluteSize.Y
+
+			-- Top-left pixel clamping durante o arraste
+			local targetTopLeftX = math.clamp(notchDragStartAbsPos.X + delta.X, 5, vp.X - curW - 5)
+			local targetTopLeftY = math.clamp(notchDragStartAbsPos.Y + delta.Y, 5, vp.Y - curH - 5)
+
+			local ax = notchFrame.AnchorPoint.X
+			local ay = notchFrame.AnchorPoint.Y
+			notchFrame.Position = UDim2.fromOffset(targetTopLeftX + ax * curW, targetTopLeftY + ay * curH)
 		end
 	end
 end)
 
 local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		if not notchDragged then
+		if notchDragged then
+			-- Arraste finalizado: calcular AnchorPoint dinâmico e clamping para expansão segura
+			local vp = (Camera and Camera.ViewportSize) or Vector2.new(1920, 1080)
+			local curW = notchFrame.AbsoluteSize.X
+			local curH = notchFrame.AbsoluteSize.Y
+			local absPos = notchFrame.AbsolutePosition
+			local centerX = absPos.X + curW / 2
+			local centerY = absPos.Y + curH / 2
+
+			-- 1. Zona Horizontal
+			local newAx = 0.5
+			if centerX < vp.X * 0.35 then
+				newAx = 0 -- Esquerda -> expande para a Direita
+			elseif centerX > vp.X * 0.65 then
+				newAx = 1 -- Direita -> expande para a Esquerda
+			else
+				newAx = 0.5 -- Centro -> expande simétrico
+			end
+
+			-- 2. Zona Vertical
+			local newAy = 0
+			if centerY > vp.Y * 0.5 then
+				newAy = 1 -- Fundo -> expande para Cima
+			else
+				newAy = 0 -- Topo -> expande para Baixo
+			end
+
+			-- 3. Clamping garantindo que ao expandir para 440x165 NUNCA saia da tela
+			local finalTopLeftX = absPos.X
+			local finalTopLeftY = absPos.Y
+
+			if newAx == 0 then
+				if finalTopLeftX + 440 > vp.X - 10 then
+					finalTopLeftX = math.max(10, vp.X - 440 - 10)
+				end
+			elseif newAx == 1 then
+				if (finalTopLeftX + curW) - 440 < 10 then
+					finalTopLeftX = 10 + 440 - curW
+				end
+			else -- 0.5
+				local expLeft = (finalTopLeftX + curW / 2) - 220
+				local expRight = (finalTopLeftX + curW / 2) + 220
+				if expLeft < 10 then
+					finalTopLeftX = 10 + 220 - curW / 2
+				elseif expRight > vp.X - 10 then
+					finalTopLeftX = (vp.X - 10 - 220) - curW / 2
+				end
+			end
+
+			if newAy == 0 then
+				if finalTopLeftY + 165 > vp.Y - 10 then
+					finalTopLeftY = math.max(10, vp.Y - 165 - 10)
+				end
+			else -- 1
+				if (finalTopLeftY + curH) - 165 < 10 then
+					finalTopLeftY = 10 + 165 - curH
+				end
+			end
+
+			finalTopLeftX = math.clamp(finalTopLeftX, 10, vp.X - curW - 10)
+			finalTopLeftY = math.clamp(finalTopLeftY, 10, vp.Y - curH - 10)
+
+			-- Aplica sem salto visual
+			notchFrame.AnchorPoint = Vector2.new(newAx, newAy)
+			notchFrame.Position = UDim2.fromOffset(finalTopLeftX + newAx * curW, finalTopLeftY + newAy * curH)
+		else
+			-- Clique direto (sem arraste)
 			if not isNotchExpanded then
 				expandNotch()
 			else
@@ -1483,6 +1708,7 @@ local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 				collapseNotch()
 			end
 		end
+		notchDragging = false
 		notchDragged = false
 	end
 end)
@@ -1588,9 +1814,15 @@ uiUtils.BorderFrame = notchFrame
 
 afkScreen.ToggleGui = uiUtils.ToggleGui
 afkScreen.ToggleBtn = uiUtils.ToggleBtn
-afkScreen.BorderFrame = uiUtils.BorderFrame
+afkScreen.BorderFrame = notchFrame
+afkScreen.BorderStroke = notchStroke
+afkScreen.BorderGradient = borderGradient
+afkScreen.BorderOutlineEnabled = borderOutlineEnabled
+afkScreen.CurrentPreset = currentPresetName
+
 afkScreen.ExpandNotch = expandNotch
 afkScreen.CollapseNotch = collapseNotch
+afkScreen.SetBorderOutlineEnabled = setBorderOutlineEnabled
 
 -- ══════════════════════════════════════════════════════════════════
 -- MÉTODOS PÚBLICOS DA API
@@ -1680,6 +1912,48 @@ function afkScreen.SetAutoWindowFocus(...)
 	return afkScreen
 end
 
+
+function afkScreen.SetPreset(...)
+	local args = { ... }
+	local name = (typeof(args[1]) == "string" and args[1]) or (typeof(args[2]) == "string" and args[2])
+	local animate = (typeof(args[2]) == "boolean" and args[2]) or (typeof(args[3]) == "boolean" and args[3])
+	if name then
+		return applyPreset(name, animate)
+	end
+	return false
+end
+
+function afkScreen.GetPresets()
+	local names = { "Top-Left", "Top-Center", "Top-Right", "Bottom-Left", "Bottom-Center", "Bottom-Right" }
+	return names, NOTCH_PRESETS
+end
+
+function afkScreen.SetBorderOutlineEnabled(...)
+	local args = { ... }
+	local enabled = (typeof(args[1]) == "boolean" and args[1]) or (typeof(args[2]) == "boolean" and args[2])
+	if enabled == nil then enabled = true end
+	setBorderOutlineEnabled(enabled)
+	return afkScreen
+end
+afkScreen.SetBorderGlow = afkScreen.SetBorderOutlineEnabled
+
+function afkScreen.SetDraggableEnabled(...)
+	local args = { ... }
+	local enabled = (typeof(args[1]) == "boolean" and args[1]) or (typeof(args[2]) == "boolean" and args[2])
+	if enabled == nil then enabled = true end
+	setDraggableEnabled(enabled)
+	return afkScreen
+end
+
+function afkScreen.ToggleNotch()
+	if isNotchExpanded then
+		collapseNotch()
+	else
+		expandNotch()
+	end
+	return afkScreen
+end
+
 function afkScreen.SetToggleButtonVisible(...)
 	local arg1, arg2 = ...
 	local visible = typeof(arg1) == "boolean" and arg1 or arg2
@@ -1737,8 +2011,10 @@ function afkScreen.Destroy()
 		viewportConnection = nil
 	end
 
-	-- Limpa conexões e instâncias do Notch Toggle Button da Obsidian
+	-- Limpa conexões e instâncias do Notch Toggle Button da Obsidian v2.1
 	notchStatsRunning = false
+	borderOutlineEnabled = false
+	if borderRotationConn then borderRotationConn:Disconnect(); borderRotationConn = nil end
 	if notchRenderConn then notchRenderConn:Disconnect(); notchRenderConn = nil end
 	if notchKeybindConn then notchKeybindConn:Disconnect(); notchKeybindConn = nil end
 	if notchOutsideClickConn then notchOutsideClickConn:Disconnect(); notchOutsideClickConn = nil end
