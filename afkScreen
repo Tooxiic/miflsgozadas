@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local GuiService = game:GetService("GuiService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
@@ -1638,14 +1639,39 @@ local notchDragInput = nil
 
 local transFrame = nil
 
-local function getOrCreateTransitionFrame()
-	if transFrame and transFrame.Parent then return transFrame end
-	if not uiUtils.ToggleGui then return nil end
+local function getGuiInsetFor(gui)
+	if not gui or gui.IgnoreGuiInset == true then
+		return Vector2.zero
+	end
+	local s, inset = pcall(function()
+		return GuiService:GetGuiInset()
+	end)
+	if s and inset then
+		return inset
+	end
+	return Vector2.zero
+end
+
+local function getOrCreateTransitionFrame(targetGui)
+	local desiredParent = targetGui or (uiUtils and uiUtils.ToggleGui)
+	if not desiredParent then return nil end
+
+	if transFrame and transFrame.Parent then
+		if transFrame.Parent ~= desiredParent then
+			pcall(function()
+				transFrame:Destroy()
+			end)
+			transFrame = nil
+			transGradient = nil
+		else
+			return transFrame
+		end
+	end
 
 	local tf = Instance.new("Frame")
 	tf.Name = "NotchWindowTransition"
 	tf.BackgroundColor3 = NOTCH_COLOR_BG
-	tf.BackgroundTransparency = 0.35
+	tf.BackgroundTransparency = 1
 	tf.BorderSizePixel = 0
 	tf.Visible = false
 	tf.ZIndex = 400
@@ -1659,15 +1685,18 @@ local function getOrCreateTransitionFrame()
 	stroke.Name = "Stroke"
 	stroke.Thickness = 1.6
 	stroke.Color = Color3.fromRGB(255, 255, 255)
+	stroke.Transparency = 1
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = tf
 
-	local grad = borderGradient:Clone()
-	grad.Name = "BorderGradient"
-	grad.Parent = stroke
-	transGradient = grad
+	if borderGradient then
+		local grad = borderGradient:Clone()
+		grad.Name = "BorderGradient"
+		grad.Parent = stroke
+		transGradient = grad
+	end
 
-	tf.Parent = uiUtils.ToggleGui
+	tf.Parent = desiredParent
 	transFrame = tf
 	return transFrame
 end
@@ -1699,9 +1728,12 @@ function afkScreen.OpenWindowAnimated(targetWin)
 		collapseNotch()
 	end
 
+	local targetGui = mf:FindFirstAncestorWhichIsA("ScreenGui") or (uiUtils and uiUtils.ToggleGui)
+	local inset = getGuiInsetFor(targetGui)
+
 	local notchAbsPos = notchFrame.AbsolutePosition
 	local notchAbsSize = notchFrame.AbsoluteSize
-	local startPos = UDim2.fromOffset(notchAbsPos.X, notchAbsPos.Y)
+	local startPos = UDim2.fromOffset(notchAbsPos.X - inset.X, notchAbsPos.Y - inset.Y)
 	local startSize = UDim2.fromOffset(notchAbsSize.X, notchAbsSize.Y)
 
 	local targetPos = defaultWinPos
@@ -1733,7 +1765,7 @@ function afkScreen.OpenWindowAnimated(targetWin)
 	mf.Position = startPos
 	mf.Size = startSize
 
-	local tf = getOrCreateTransitionFrame()
+	local tf = getOrCreateTransitionFrame(targetGui)
 	if tf then
 		tf.AnchorPoint = Vector2.new(0, 0)
 		tf.Position = startPos
@@ -1765,6 +1797,12 @@ function afkScreen.OpenWindowAnimated(targetWin)
 				CornerRadius = UDim.new(0, 8),
 			}):Play()
 		end
+		local tStroke = tf:FindFirstChild("Stroke")
+		if tStroke then
+			TweenService:Create(tStroke, tweenInfo, {
+				Transparency = 0.8,
+			}):Play()
+		end
 	end
 
 	mfTween.Completed:Connect(function()
@@ -1774,12 +1812,25 @@ function afkScreen.OpenWindowAnimated(targetWin)
 		lastKnownWindowPos = targetPos
 
 		if tf then
-			local fade = TweenService:Create(tf, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			local fadeInfo = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+			local tStroke = tf:FindFirstChild("Stroke")
+			if tStroke then
+				TweenService:Create(tStroke, fadeInfo, {
+					Transparency = 1,
+				}):Play()
+			end
+
+			local fadeBg = TweenService:Create(tf, fadeInfo, {
 				BackgroundTransparency = 1,
 			})
-			fade:Play()
-			fade.Completed:Connect(function()
+			fadeBg:Play()
+
+			fadeBg.Completed:Connect(function()
 				tf.Visible = false
+				tf.BackgroundTransparency = 1
+				if tStroke then
+					tStroke.Transparency = 1
+				end
 				isWindowAnimating = false
 			end)
 		else
@@ -1799,6 +1850,9 @@ function afkScreen.CloseWindowAnimated(targetWin)
 	if not mf.Visible then return false end
 	isWindowAnimating = true
 
+	local targetGui = mf:FindFirstAncestorWhichIsA("ScreenGui") or (uiUtils and uiUtils.ToggleGui)
+	local inset = getGuiInsetFor(targetGui)
+
 	if mf.Size.X.Offset >= 400 and mf.Size.Y.Offset >= 300 then
 		lastKnownWindowPos = mf.Position
 	end
@@ -1807,12 +1861,12 @@ function afkScreen.CloseWindowAnimated(targetWin)
 
 	local notchAbsPos = notchFrame.AbsolutePosition
 	local notchAbsSize = notchFrame.AbsoluteSize
-	local targetNotchPos = UDim2.fromOffset(notchAbsPos.X, notchAbsPos.Y)
+	local targetNotchPos = UDim2.fromOffset(notchAbsPos.X - inset.X, notchAbsPos.Y - inset.Y)
 	local targetNotchSize = UDim2.fromOffset(notchAbsSize.X, notchAbsSize.Y)
 
 	mf.ClipsDescendants = true
 
-	local tf = getOrCreateTransitionFrame()
+	local tf = getOrCreateTransitionFrame(targetGui)
 	if tf then
 		tf.AnchorPoint = Vector2.new(0, 0)
 		tf.Position = curPos
@@ -1836,12 +1890,18 @@ function afkScreen.CloseWindowAnimated(targetWin)
 		TweenService:Create(tf, tweenInfo, {
 			Position = targetNotchPos,
 			Size = targetNotchSize,
-			BackgroundTransparency = 0.2,
+			BackgroundTransparency = 0.85,
 		}):Play()
 		local tCorner = tf:FindFirstChild("Corner")
 		if tCorner then
 			TweenService:Create(tCorner, tweenInfo, {
 				CornerRadius = UDim.new(0, 19),
+			}):Play()
+		end
+		local tStroke = tf:FindFirstChild("Stroke")
+		if tStroke then
+			TweenService:Create(tStroke, tweenInfo, {
+				Transparency = 0.85,
 			}):Play()
 		end
 	end
@@ -1861,7 +1921,15 @@ function afkScreen.CloseWindowAnimated(targetWin)
 		mf.Position = curPos
 		mf.Size = curSize
 		mf.ClipsDescendants = false
-		if tf then tf.Visible = false end
+
+		if tf then
+			tf.Visible = false
+			tf.BackgroundTransparency = 1
+			local tStroke = tf:FindFirstChild("Stroke")
+			if tStroke then
+				tStroke.Transparency = 1
+			end
+		end
 		isWindowAnimating = false
 
 		-- Pop-in bounce do Notch ao concluir o fechamento
@@ -1970,6 +2038,9 @@ local notchGlobalInputConn = UserInputService.InputChanged:Connect(function(inpu
 
 		if delta.Magnitude > 6 then
 			notchDragged = true
+			if isNotchExpanded then
+				collapseNotch()
+			end
 
 			local vp = (Camera and Camera.ViewportSize) or Vector2.new(1920, 1080)
 			local curW = notchFrame.AbsoluteSize.X
@@ -2007,10 +2078,7 @@ local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 				newAx = 0.5 -- Centro -> expande simétrico
 			end
 
-			-- 2. Zona Vertical (Metade inferior: AnchorPoint.Y = 1, expande para Cima)
-			local newAy = (centerY > vp.Y * 0.5) and 1 or 0
-
-			-- 3. Clamping garantindo que não saia da tela
+			-- 2. Clamping horizontal garantindo que não saia da tela
 			local finalTopLeftX = absPos.X
 			local finalTopLeftY = absPos.Y
 
@@ -2032,16 +2100,25 @@ local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 				end
 			end
 
-			-- Clamping vertical:
-			-- NÃO subtrair 165px quando o notch está minimizado (altura 38px)!
-			-- Quando newAy == 1, o notch expande para Cima, permitindo encostar no rodapé (vp.Y - curH - 10).
-			-- Quando newAy == 0, o notch expande para Baixo, permitindo encostar no topo (10).
 			finalTopLeftX = math.clamp(finalTopLeftX, 10, vp.X - curW - 10)
-			finalTopLeftY = math.clamp(finalTopLeftY, 10, vp.Y - curH - 10)
 
-			-- Aplica sem salto visual
-			notchFrame.AnchorPoint = Vector2.new(newAx, newAy)
-			notchFrame.Position = UDim2.fromOffset(finalTopLeftX + newAx * curW, finalTopLeftY + newAy * curH)
+			-- 3. Snap e ancoragem vertical
+			local isBottomHalf = (centerY > vp.Y * 0.5)
+			if isBottomHalf then
+				notchFrame.AnchorPoint = Vector2.new(newAx, 1)
+				local targetY = math.min(vp.Y - 10, finalTopLeftY + curH)
+				if targetY > vp.Y - 45 then
+					targetY = vp.Y - 10
+				end
+				notchFrame.Position = UDim2.fromOffset(finalTopLeftX + newAx * curW, targetY)
+			else
+				notchFrame.AnchorPoint = Vector2.new(newAx, 0)
+				local targetY = math.max(10, finalTopLeftY)
+				if targetY < 45 then
+					targetY = 10
+				end
+				notchFrame.Position = UDim2.fromOffset(finalTopLeftX + newAx * curW, targetY)
+			end
 		else
 			-- Clique direto (sem arraste)
 			if not isNotchExpanded then
@@ -2406,6 +2483,14 @@ function afkScreen.Destroy()
 	if notchMouseEnterConn then notchMouseEnterConn:Disconnect(); notchMouseEnterConn = nil end
 	if notchMouseLeaveConn then notchMouseLeaveConn:Disconnect(); notchMouseLeaveConn = nil end
 	if notchLeaveDebounceThread then task.cancel(notchLeaveDebounceThread); notchLeaveDebounceThread = nil end
+
+	if transFrame then
+		pcall(function()
+			transFrame:Destroy()
+		end)
+		transFrame = nil
+		transGradient = nil
+	end
 
 	if uiUtils.ToggleGui then
 		pcall(function()
