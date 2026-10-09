@@ -10,10 +10,14 @@ local Camera = workspace.CurrentCamera
 
 -- Global cleanup da instância anterior se recarregado
 local env = (typeof(getgenv) == "function" and getgenv()) or _G
-if env.__KITTY_AFK and typeof(env.__KITTY_AFK.Destroy) == "function" then
-	pcall(function()
-		env.__KITTY_AFK:Destroy()
-	end)
+local previousWindow = nil
+if env.__KITTY_AFK and typeof(env.__KITTY_AFK) == "table" then
+	previousWindow = env.__KITTY_AFK.Window
+	if typeof(env.__KITTY_AFK.Destroy) == "function" then
+		pcall(function()
+			env.__KITTY_AFK:Destroy()
+		end)
+	end
 end
 
 local function generateRandomString(length: number): string
@@ -75,6 +79,9 @@ local uiUtils = (typeof(passedArg) == "table" and passedArg) or env.uiUtils or {
 afkScreen.uiUtils = uiUtils
 if typeof(passedArg) == "table" and passedArg.Window then
 	afkScreen.Window = passedArg.Window
+elseif previousWindow then
+	afkScreen.Window = previousWindow
+	uiUtils.Window = previousWindow
 end
 
 afkScreen.Version = "2.0.0"
@@ -1619,12 +1626,15 @@ local notchDragInput = nil
 
 local function toggleObsidianWindow()
 	local toggled = false
-	if uiUtils.Window and typeof(uiUtils.Window.Toggle) == "function" then
-		uiUtils.Window:Toggle()
-		toggled = true
-	elseif afkScreen.Window and typeof(afkScreen.Window.Toggle) == "function" then
-		afkScreen.Window:Toggle()
-		toggled = true
+	local win = uiUtils.Window or afkScreen.Window or (env and env.uiUtils and env.uiUtils.Window) or (env and env.__KITTY_AFK and env.__KITTY_AFK.Window)
+	if win then
+		if typeof(win.Toggle) == "function" then
+			win:Toggle()
+			toggled = true
+		elseif typeof(win.Show) == "function" then
+			win:Show()
+			toggled = true
+		end
 	end
 	return toggled
 end
@@ -1776,13 +1786,24 @@ local notchMouseLeaveConn = interactionBtn.MouseLeave:Connect(function()
 	end)
 end)
 
+local lastKeyToggleTime = 0
+local KEY_TOGGLE_DEBOUNCE = 0.35
+
 local notchKeybindConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if UserInputService:GetFocusedTextBox() ~= nil then return end
 	if input.KeyCode == Enum.KeyCode.X then
-		toggleObsidianWindow()
+		local now = os.clock()
+		if now - lastKeyToggleTime < KEY_TOGGLE_DEBOUNCE then
+			return
+		end
+		lastKeyToggleTime = now
+
 		if isNotchExpanded then
+			isNotchAnimating = false
 			collapseNotch()
 		end
+
+		toggleObsidianWindow()
 	end
 end)
 
@@ -1822,19 +1843,15 @@ end)
 
 local notchStatsRunning = true
 task.spawn(function()
-	local timerTick = 0
 	while notchStatsRunning and uiUtils.ToggleGui and uiUtils.ToggleGui.Parent do
-		timerTick = timerTick + 1
-		if timerTick % 4 == 0 then
-			local elapsed = os.time() - notchSessionStart
-			local hours = math.floor(elapsed / 3600)
-			local mins = math.floor((elapsed % 3600) / 60)
-			local secs = elapsed % 60
-			if hours > 0 then
-				timerValueLabel.Text = string.format("%dh %02dm", hours, mins)
-			else
-				timerValueLabel.Text = string.format("%dm %02ds", mins, secs)
-			end
+		local elapsed = math.max(0, os.time() - notchSessionStart)
+		local hours = math.floor(elapsed / 3600)
+		local mins = math.floor((elapsed % 3600) / 60)
+		local secs = elapsed % 60
+		if hours > 0 then
+			timerValueLabel.Text = string.format("%dh %02dm", hours, mins)
+		else
+			timerValueLabel.Text = string.format("%dm %02ds", mins, secs)
 		end
 
 		pcall(function()
@@ -1892,7 +1909,7 @@ task.spawn(function()
 			end
 		end
 
-		task.wait(0.12)
+		task.wait(1.0)
 	end
 end)
 
