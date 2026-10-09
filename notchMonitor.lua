@@ -6,7 +6,7 @@
 	Padrão Arquitetural: KittyBrain (Obsidian Ultra / Cyberpunk Dark)
 
 	Uso Modular:
-	local createNotchMonitor = loadstring(game:HttpGet(".../NotchMonitor.lua"))()
+	local createNotchMonitor = loadstring(game:HttpGet(".../notchMonitor.lua"))()
 	local monitorWrapper = createNotchMonitor(parentGroup, {
 		Config = Config,
 		Options = Options,
