@@ -1123,10 +1123,16 @@ borderGradient.Parent = notchStroke
 -- Animação Contínua da Rotação do Gradiente
 local borderOutlineEnabled = true
 local gradientAngle = 0
+local transGradient = nil
 local borderRotationConn = RunService.Heartbeat:Connect(function(dt)
-	if borderOutlineEnabled and borderGradient and borderGradient.Parent then
+	if borderOutlineEnabled then
 		gradientAngle = (gradientAngle + dt * 100) % 360
-		borderGradient.Rotation = gradientAngle
+		if borderGradient and borderGradient.Parent then
+			borderGradient.Rotation = gradientAngle
+		end
+		if transGradient and transGradient.Parent then
+			transGradient.Rotation = gradientAngle
+		end
 	end
 end)
 
@@ -1618,29 +1624,322 @@ end
 -- ==============================================================================
 -- Handlers de Interação & Arraste Suave com Motor de Direção Dinâmica
 -- ==============================================================================
+local isNotchDraggable = true
+local isWindowAnimating = false
+local defaultWinPos = UDim2.new(0.5, -320, 0.5, -240)
+local defaultWinSize = UDim2.fromOffset(640, 480)
+local lastKnownWindowPos = defaultWinPos
+
 local notchDragging = false
 local notchDragged = false
 local notchDragStartMouse = nil
 local notchDragStartAbsPos = nil
 local notchDragInput = nil
 
-local function toggleObsidianWindow()
-	local toggled = false
-	local win = uiUtils.Window or afkScreen.Window or (env and env.uiUtils and env.uiUtils.Window) or (env and env.__KITTY_AFK and env.__KITTY_AFK.Window)
-	if win then
-		if typeof(win.Toggle) == "function" then
-			win:Toggle()
-			toggled = true
-		elseif typeof(win.Show) == "function" then
-			win:Show()
-			toggled = true
+local transFrame = nil
+
+local function getOrCreateTransitionFrame()
+	if transFrame and transFrame.Parent then return transFrame end
+	if not uiUtils.ToggleGui then return nil end
+
+	local tf = Instance.new("Frame")
+	tf.Name = "NotchWindowTransition"
+	tf.BackgroundColor3 = NOTCH_COLOR_BG
+	tf.BackgroundTransparency = 0.35
+	tf.BorderSizePixel = 0
+	tf.Visible = false
+	tf.ZIndex = 400
+
+	local corner = Instance.new("UICorner")
+	corner.Name = "Corner"
+	corner.CornerRadius = UDim.new(0, 19)
+	corner.Parent = tf
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Name = "Stroke"
+	stroke.Thickness = 1.6
+	stroke.Color = Color3.fromRGB(255, 255, 255)
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = tf
+
+	local grad = borderGradient:Clone()
+	grad.Name = "BorderGradient"
+	grad.Parent = stroke
+	transGradient = grad
+
+	tf.Parent = uiUtils.ToggleGui
+	transFrame = tf
+	return transFrame
+end
+
+local function resolveWindow(w)
+	if typeof(w) == "table" then
+		if w.MainFrame then return w end
+		if w.Window and typeof(w.Window) == "table" and w.Window.MainFrame then return w.Window end
+	end
+	local fallback = uiUtils.Window or afkScreen.Window or (env and env.uiUtils and env.uiUtils.Window) or (env and env.__KITTY_AFK and env.__KITTY_AFK.Window) or (env and env.Library and env.Library.Window)
+	if fallback and typeof(fallback) == "table" and fallback.MainFrame then
+		return fallback
+	end
+	return nil
+end
+
+function afkScreen.OpenWindowAnimated(targetWin)
+	local win = resolveWindow(targetWin)
+	if not win or not win.MainFrame then return false end
+	if isWindowAnimating then return false end
+
+	local mf = win.MainFrame
+	if mf.Visible and not isWindowAnimating then return true end
+	isWindowAnimating = true
+
+	-- Recolher o notch expandido suavemente para a cápsula minimizada enquanto a janela abre
+	if isNotchExpanded then
+		isNotchAnimating = false
+		collapseNotch()
+	end
+
+	local notchAbsPos = notchFrame.AbsolutePosition
+	local notchAbsSize = notchFrame.AbsoluteSize
+	local startPos = UDim2.fromOffset(notchAbsPos.X, notchAbsPos.Y)
+	local startSize = UDim2.fromOffset(notchAbsSize.X, notchAbsSize.Y)
+
+	local targetPos = defaultWinPos
+	if lastKnownWindowPos and (lastKnownWindowPos.X.Scale ~= 0 or lastKnownWindowPos.Y.Scale ~= 0 or lastKnownWindowPos.Y.Offset > 100) then
+		targetPos = lastKnownWindowPos
+	end
+	local targetSize = defaultWinSize
+
+	-- Configura o MainFrame partindo da geometria exata do notch
+	mf.AnchorPoint = Vector2.new(0, 0)
+	mf.Position = startPos
+	mf.Size = startSize
+	mf.ClipsDescendants = true
+
+	-- Invoca toggle original para ativar lógica interna da biblioteca (visibilidade, cursor, etc.)
+	if env and env.Library and typeof(env.Library.Toggle) == "function" then
+		if env.Library.Toggled ~= true then
+			pcall(function() env.Library:Toggle(true) end)
+		end
+	elseif typeof(win.__rawToggle) == "function" then
+		pcall(function() win.__rawToggle(win, true) end)
+	end
+	mf.Visible = true
+	if env and env.Library and typeof(env.Library.Toggled) == "boolean" then
+		env.Library.Toggled = true
+	end
+
+	-- Garante posição e tamanho de início na origem do notch
+	mf.Position = startPos
+	mf.Size = startSize
+
+	local tf = getOrCreateTransitionFrame()
+	if tf then
+		tf.AnchorPoint = Vector2.new(0, 0)
+		tf.Position = startPos
+		tf.Size = startSize
+		tf.BackgroundTransparency = 0.35
+		local tCorner = tf:FindFirstChild("Corner")
+		if tCorner then tCorner.CornerRadius = UDim.new(0, 19) end
+		local tStroke = tf:FindFirstChild("Stroke")
+		if tStroke then tStroke.Transparency = 0 end
+		tf.Visible = true
+	end
+
+	local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+	local mfTween = TweenService:Create(mf, tweenInfo, {
+		Position = targetPos,
+		Size = targetSize,
+	})
+	mfTween:Play()
+
+	if tf then
+		TweenService:Create(tf, tweenInfo, {
+			Position = targetPos,
+			Size = targetSize,
+			BackgroundTransparency = 0.85,
+		}):Play()
+		local tCorner = tf:FindFirstChild("Corner")
+		if tCorner then
+			TweenService:Create(tCorner, tweenInfo, {
+				CornerRadius = UDim.new(0, 8),
+			}):Play()
 		end
 	end
-	return toggled
+
+	mfTween.Completed:Connect(function()
+		mf.ClipsDescendants = false
+		mf.Position = targetPos
+		mf.Size = targetSize
+		lastKnownWindowPos = targetPos
+
+		if tf then
+			local fade = TweenService:Create(tf, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				BackgroundTransparency = 1,
+			})
+			fade:Play()
+			fade.Completed:Connect(function()
+				tf.Visible = false
+				isWindowAnimating = false
+			end)
+		else
+			isWindowAnimating = false
+		end
+	end)
+
+	return true
+end
+
+function afkScreen.CloseWindowAnimated(targetWin)
+	local win = resolveWindow(targetWin)
+	if not win or not win.MainFrame then return false end
+	if isWindowAnimating then return false end
+
+	local mf = win.MainFrame
+	if not mf.Visible then return false end
+	isWindowAnimating = true
+
+	if mf.Size.X.Offset >= 400 and mf.Size.Y.Offset >= 300 then
+		lastKnownWindowPos = mf.Position
+	end
+	local curPos = lastKnownWindowPos or defaultWinPos
+	local curSize = defaultWinSize
+
+	local notchAbsPos = notchFrame.AbsolutePosition
+	local notchAbsSize = notchFrame.AbsoluteSize
+	local targetNotchPos = UDim2.fromOffset(notchAbsPos.X, notchAbsPos.Y)
+	local targetNotchSize = UDim2.fromOffset(notchAbsSize.X, notchAbsSize.Y)
+
+	mf.ClipsDescendants = true
+
+	local tf = getOrCreateTransitionFrame()
+	if tf then
+		tf.AnchorPoint = Vector2.new(0, 0)
+		tf.Position = curPos
+		tf.Size = curSize
+		tf.BackgroundTransparency = 0.5
+		local tCorner = tf:FindFirstChild("Corner")
+		if tCorner then tCorner.CornerRadius = UDim.new(0, 8) end
+		local tStroke = tf:FindFirstChild("Stroke")
+		if tStroke then tStroke.Transparency = 0 end
+		tf.Visible = true
+	end
+
+	local tweenInfo = TweenInfo.new(0.32, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
+	local mfTween = TweenService:Create(mf, tweenInfo, {
+		Position = targetNotchPos,
+		Size = targetNotchSize,
+	})
+	mfTween:Play()
+
+	if tf then
+		TweenService:Create(tf, tweenInfo, {
+			Position = targetNotchPos,
+			Size = targetNotchSize,
+			BackgroundTransparency = 0.2,
+		}):Play()
+		local tCorner = tf:FindFirstChild("Corner")
+		if tCorner then
+			TweenService:Create(tCorner, tweenInfo, {
+				CornerRadius = UDim.new(0, 19),
+			}):Play()
+		end
+	end
+
+	mfTween.Completed:Connect(function()
+		if env and env.Library and typeof(env.Library.Toggle) == "function" then
+			if env.Library.Toggled == true then
+				pcall(function() env.Library:Toggle(false) end)
+			end
+		elseif typeof(win.__rawToggle) == "function" then
+			pcall(function() win.__rawToggle(win, false) end)
+		end
+		mf.Visible = false
+		if env and env.Library and typeof(env.Library.Toggled) == "boolean" then
+			env.Library.Toggled = false
+		end
+		mf.Position = curPos
+		mf.Size = curSize
+		mf.ClipsDescendants = false
+		if tf then tf.Visible = false end
+		isWindowAnimating = false
+
+		-- Pop-in bounce do Notch ao concluir o fechamento
+		TweenService:Create(notchScale, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Scale = 1.08,
+		}):Play()
+		task.delay(0.14, function()
+			TweenService:Create(notchScale, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Scale = 1.0,
+			}):Play()
+		end)
+	end)
+
+	return true
+end
+
+local function hookWindowMethods(targetWin)
+	if not targetWin or typeof(targetWin) ~= "table" then return end
+	if targetWin.__notchHooked and targetWin.__rawToggle then return end
+	targetWin.__notchHooked = true
+
+	local oldToggle = targetWin.__rawToggle or targetWin.Toggle
+	targetWin.__rawToggle = oldToggle
+
+	targetWin.Toggle = function(...)
+		if isWindowAnimating then return end
+		local mf = targetWin.MainFrame
+		if mf and mf.Visible then
+			afkScreen.CloseWindowAnimated(targetWin)
+		else
+			afkScreen.OpenWindowAnimated(targetWin)
+		end
+	end
+
+	local oldSetMin = targetWin.__rawSetMinimized or targetWin.SetMinimized
+	targetWin.__rawSetMinimized = oldSetMin
+	if typeof(oldSetMin) == "function" then
+		targetWin.SetMinimized = function(self, minVal, ...)
+			if isWindowAnimating then return end
+			if minVal then
+				afkScreen.CloseWindowAnimated(targetWin)
+			else
+				afkScreen.OpenWindowAnimated(targetWin)
+			end
+		end
+	end
+end
+
+local function toggleObsidianWindow()
+	local win = resolveWindow()
+	if not win or not win.MainFrame then return false end
+	if isWindowAnimating then return false end
+
+	if win.MainFrame.Visible then
+		return afkScreen.CloseWindowAnimated(win)
+	else
+		return afkScreen.OpenWindowAnimated(win)
+	end
+end
+
+function afkScreen.SetDraggableEnabled(enabled: boolean)
+	isNotchDraggable = (enabled == true)
+	afkScreen.DraggableEnabled = isNotchDraggable
+	return isNotchDraggable
+end
+afkScreen.SetDraggable = afkScreen.SetDraggableEnabled
+
+function afkScreen.IsDraggableEnabled()
+	return isNotchDraggable
 end
 
 local notchInputBeganConn = interactionBtn.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		if not isNotchDraggable then
+			notchDragging = false
+			notchDragged = false
+			return
+		end
 		notchDragging = true
 		notchDragged = false
 		notchDragStartMouse = Vector2.new(input.Position.X, input.Position.Y)
@@ -1661,6 +1960,10 @@ local notchInputChangedConn = interactionBtn.InputChanged:Connect(function(input
 end)
 
 local notchGlobalInputConn = UserInputService.InputChanged:Connect(function(input)
+	if not isNotchDraggable then
+		notchDragging = false
+		return
+	end
 	if input == notchDragInput and notchDragging and notchDragStartMouse and notchDragStartAbsPos then
 		local currentMouse = Vector2.new(input.Position.X, input.Position.Y)
 		local delta = currentMouse - notchDragStartMouse
@@ -1685,7 +1988,7 @@ end)
 
 local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		if notchDragged then
+		if notchDragged and isNotchDraggable then
 			-- Arraste finalizado: calcular AnchorPoint dinâmico e clamping para expansão segura
 			local vp = (Camera and Camera.ViewportSize) or Vector2.new(1920, 1080)
 			local curW = notchFrame.AbsoluteSize.X
@@ -1704,15 +2007,10 @@ local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 				newAx = 0.5 -- Centro -> expande simétrico
 			end
 
-			-- 2. Zona Vertical
-			local newAy = 0
-			if centerY > vp.Y * 0.5 then
-				newAy = 1 -- Fundo -> expande para Cima
-			else
-				newAy = 0 -- Topo -> expande para Baixo
-			end
+			-- 2. Zona Vertical (Metade inferior: AnchorPoint.Y = 1, expande para Cima)
+			local newAy = (centerY > vp.Y * 0.5) and 1 or 0
 
-			-- 3. Clamping garantindo que ao expandir para 440x165 NUNCA saia da tela
+			-- 3. Clamping garantindo que não saia da tela
 			local finalTopLeftX = absPos.X
 			local finalTopLeftY = absPos.Y
 
@@ -1734,16 +2032,10 @@ local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 				end
 			end
 
-			if newAy == 0 then
-				if finalTopLeftY + 165 > vp.Y - 10 then
-					finalTopLeftY = math.max(10, vp.Y - 165 - 10)
-				end
-			else -- 1
-				if (finalTopLeftY + curH) - 165 < 10 then
-					finalTopLeftY = 10 + 165 - curH
-				end
-			end
-
+			-- Clamping vertical:
+			-- NÃO subtrair 165px quando o notch está minimizado (altura 38px)!
+			-- Quando newAy == 1, o notch expande para Cima, permitindo encostar no rodapé (vp.Y - curH - 10).
+			-- Quando newAy == 0, o notch expande para Baixo, permitindo encostar no topo (10).
 			finalTopLeftX = math.clamp(finalTopLeftX, 10, vp.X - curW - 10)
 			finalTopLeftY = math.clamp(finalTopLeftY, 10, vp.Y - curH - 10)
 
@@ -1798,11 +2090,6 @@ local notchKeybindConn = UserInputService.InputBegan:Connect(function(input, gam
 		end
 		lastKeyToggleTime = now
 
-		if isNotchExpanded then
-			isNotchAnimating = false
-			collapseNotch()
-		end
-
 		toggleObsidianWindow()
 	end
 end)
@@ -1822,37 +2109,30 @@ local notchOutsideClickConn = UserInputService.InputBegan:Connect(function(input
 	end
 end)
 
--- Live Stats & Histogram Sampling Loop (Right -> Left slide)
+-- Live Stats & Histogram Sampling Loop (Right -> Left slide, estritamente 1s)
 local notchSessionStart = os.time()
-local notchFrameTimes = {}
+local notchFrameCount = 0
 local notchFps = 60
 local notchPing = 40
 
 local fpsHistory = table.create(HISTO_BARS_COUNT, 0)
 local pingHistory = table.create(HISTO_BARS_COUNT, 0)
 
-local notchRenderConn = RunService.RenderStepped:Connect(function(dt)
-	table.insert(notchFrameTimes, dt)
-	if #notchFrameTimes > 30 then
-		table.remove(notchFrameTimes, 1)
-	end
-	local sum = 0
-	for _, t in ipairs(notchFrameTimes) do sum = sum + t end
-	notchFps = math.floor(0.5 + (#notchFrameTimes / math.max(0.0001, sum)))
+local notchRenderConn = RunService.RenderStepped:Connect(function()
+	notchFrameCount = notchFrameCount + 1
 end)
 
 local notchStatsRunning = true
 task.spawn(function()
+	local lastTime = os.clock()
 	while notchStatsRunning and uiUtils.ToggleGui and uiUtils.ToggleGui.Parent do
-		local elapsed = math.max(0, os.time() - notchSessionStart)
-		local hours = math.floor(elapsed / 3600)
-		local mins = math.floor((elapsed % 3600) / 60)
-		local secs = elapsed % 60
-		if hours > 0 then
-			timerValueLabel.Text = string.format("%dh %02dm", hours, mins)
-		else
-			timerValueLabel.Text = string.format("%dm %02ds", mins, secs)
-		end
+		task.wait(1.0)
+		local now = os.clock()
+		local dtSec = math.max(0.001, now - lastTime)
+		lastTime = now
+
+		notchFps = math.round(notchFrameCount / dtSec)
+		notchFrameCount = 0
 
 		pcall(function()
 			local netPing = LocalPlayer:GetNetworkPing()
@@ -1865,6 +2145,17 @@ task.spawn(function()
 				end
 			end
 		end)
+		if notchPing <= 0 then notchPing = 35 end
+
+		local elapsed = math.max(0, os.time() - notchSessionStart)
+		local hours = math.floor(elapsed / 3600)
+		local mins = math.floor((elapsed % 3600) / 60)
+		local secs = elapsed % 60
+		if hours > 0 then
+			timerValueLabel.Text = string.format("%dh %02dm", hours, mins)
+		else
+			timerValueLabel.Text = string.format("%dm %02ds", mins, secs)
+		end
 
 		fpsValueLabel.Text = tostring(notchFps)
 		pingValueLabel.Text = tostring(notchPing) .. "ms"
@@ -1908,8 +2199,6 @@ task.spawn(function()
 				bar.BackgroundColor3 = (i == HISTO_BARS_COUNT and COLOR_BAR_ACTIVE or COLOR_BAR_HISTORY)
 			end
 		end
-
-		task.wait(1.0)
 	end
 end)
 
@@ -1928,6 +2217,8 @@ afkScreen.CurrentPreset = currentPresetName
 afkScreen.ExpandNotch = expandNotch
 afkScreen.CollapseNotch = collapseNotch
 afkScreen.SetBorderOutlineEnabled = setBorderOutlineEnabled
+afkScreen.ToggleObsidianWindow = toggleObsidianWindow
+afkScreen.ToggleWindow = toggleObsidianWindow
 
 -- ══════════════════════════════════════════════════════════════════
 -- MÉTODOS PÚBLICOS DA API
@@ -1939,6 +2230,9 @@ function afkScreen.SetWindow(...)
 	local win = (typeof(arg1) == "table" and arg1) or arg2
 	uiUtils.Window = win
 	afkScreen.Window = win
+	if win then
+		hookWindowMethods(win)
+	end
 	return afkScreen
 end
 
@@ -2130,6 +2424,13 @@ function afkScreen.Destroy()
 	if env.__KITTY_AFK == afkScreen then
 		env.__KITTY_AFK = nil
 	end
+end
+
+-- Auto-hook na janela se já vinculada
+if afkScreen.Window then
+	hookWindowMethods(afkScreen.Window)
+elseif uiUtils.Window then
+	hookWindowMethods(uiUtils.Window)
 end
 
 -- Salva globalmente para reloads seguros
