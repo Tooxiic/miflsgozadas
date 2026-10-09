@@ -944,8 +944,9 @@ local function setAutoWindowFocus(enable: boolean)
 	end
 end
 
+
 -- ══════════════════════════════════════════════════════════════════
--- ── Floating Draggable Toggle Button (Para a Obsidian) ──
+-- ── Notch Toggle Button (Dynamic Island Redesign para Obsidian) ──
 -- ══════════════════════════════════════════════════════════════════
 if uiUtils.ToggleGui and typeof(uiUtils.ToggleGui) == "Instance" then
 	pcall(function()
@@ -953,9 +954,55 @@ if uiUtils.ToggleGui and typeof(uiUtils.ToggleGui) == "Instance" then
 	end)
 end
 
+local MarketplaceService = game:GetService("MarketplaceService")
+local Stats = game:GetService("Stats")
+
+-- Constantes Visuais do Notch
+local NOTCH_COLOR_BG = Color3.fromRGB(15, 15, 19)
+local NOTCH_COLOR_STROKE = Color3.fromRGB(60, 55, 72)
+local NOTCH_COLOR_TEXT_WHITE = Color3.fromRGB(255, 255, 255)
+local NOTCH_COLOR_TEXT_MUTED = Color3.fromRGB(140, 140, 152)
+local NOTCH_COLOR_TEXT_TAG = Color3.fromRGB(225, 155, 185)
+local NOTCH_COLOR_ACCENT_GREEN = Color3.fromRGB(120, 215, 155)
+local NOTCH_COLOR_HINT = Color3.fromRGB(235, 140, 175)
+
+local NOTCH_MIN_SIZE = UDim2.new(0, 215, 0, 38)
+local NOTCH_EXP_SIZE = UDim2.new(0, 440, 0, 165)
+local NOTCH_DEFAULT_POS = UDim2.new(0.5, 0, 0, 10)
+
+-- Obtém Asset da Kitty
+local kittyToggleAsset = ASSET_HELLO_KITTY or "rbxassetid://123770965867756"
+pcall(function()
+	if typeof(isfile) == "function" and isfile("kitty/Kittyy.png") and typeof(getcustomasset) == "function" then
+		kittyToggleAsset = getcustomasset("kitty/Kittyy.png")
+	end
+end)
+
+-- Tag do Jogo
+local currentGameTitle = "Kitty Hub"
+pcall(function()
+	local info = MarketplaceService:GetProductInfo(game.PlaceId)
+	if info and info.Name and #info.Name > 0 then
+		currentGameTitle = info.Name
+	end
+end)
+
+-- Display Name formatado
+local notchPlayerDisplayName = LocalPlayer.DisplayName
+if notchPlayerDisplayName and #notchPlayerDisplayName > 0 then
+	notchPlayerDisplayName = notchPlayerDisplayName:sub(1, 1):upper() .. notchPlayerDisplayName:sub(2)
+else
+	notchPlayerDisplayName = LocalPlayer.Name
+end
+
+-- ScreenGui dedicado do Notch
 uiUtils.ToggleGui = Instance.new("ScreenGui")
 uiUtils.ToggleGui.Name = generateRandomString(math.random(8, 16))
+uiUtils.ToggleGui.IgnoreGuiInset = true
+uiUtils.ToggleGui.DisplayOrder = 999999
 uiUtils.ToggleGui.ResetOnSpawn = false
+uiUtils.ToggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
 if gethui then
 	uiUtils.ToggleGui.Parent = gethui()
 else
@@ -963,133 +1010,587 @@ else
 	uiUtils.ToggleGui.Parent = CoreGui:FindFirstChild("RobloxGui") and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 end
 
-uiUtils.ToggleBtn = Instance.new("ImageButton")
-uiUtils.ToggleBtn.Name = "ToggleBtn"
-uiUtils.ToggleBtn.Parent = uiUtils.ToggleGui
-uiUtils.ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
-uiUtils.ToggleBtn.Position = UDim2.new(1, -80, 0, 20)
-uiUtils.ToggleBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-uiUtils.ToggleBtn.Active = true
-uiUtils.ToggleBtn.Draggable = false
-uiUtils.ToggleBtn.ImageTransparency = 1
+-- Container Principal do Notch (ToggleBtn compatível)
+local notchFrame = Instance.new("Frame")
+notchFrame.Name = "ToggleBtn"
+notchFrame.Size = NOTCH_MIN_SIZE
+notchFrame.Position = NOTCH_DEFAULT_POS
+notchFrame.AnchorPoint = Vector2.new(0.5, 0)
+notchFrame.BackgroundColor3 = NOTCH_COLOR_BG
+notchFrame.BackgroundTransparency = 0.12
+notchFrame.BorderSizePixel = 0
+notchFrame.ClipsDescendants = true
+notchFrame.Active = true
+notchFrame.ZIndex = 100
+notchFrame.Parent = uiUtils.ToggleGui
 
-local path, asset = "kitty/Kittyy.png", nil
-if writefile and isfile and getcustomasset then
-	pcall(function()
-		if makefolder and isfolder and not isfolder("kitty") then
-			pcall(makefolder, "kitty")
+local notchCorner = Instance.new("UICorner")
+notchCorner.CornerRadius = UDim.new(0, 19)
+notchCorner.Parent = notchFrame
+
+local notchStroke = Instance.new("UIStroke")
+notchStroke.Color = NOTCH_COLOR_STROKE
+notchStroke.Thickness = 1.2
+notchStroke.Transparency = 0.35
+notchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+notchStroke.Parent = notchFrame
+
+local notchScale = Instance.new("UIScale")
+notchScale.Scale = 1
+notchScale.Parent = notchFrame
+
+-- Botão interativo para captura de cliques e arraste
+local interactionBtn = Instance.new("TextButton")
+interactionBtn.Name = "InteractionBtn"
+interactionBtn.Size = UDim2.new(1, 0, 1, 0)
+interactionBtn.BackgroundTransparency = 1
+interactionBtn.Text = ""
+interactionBtn.Active = true
+interactionBtn.ZIndex = 200
+interactionBtn.Parent = notchFrame
+
+-- ------------------------------------------------------------------------------
+-- Vista Minimizada (Pill Bar / iPhone Notch)
+-- ------------------------------------------------------------------------------
+local minimizedView = Instance.new("Frame")
+minimizedView.Name = "MinimizedView"
+minimizedView.Size = UDim2.new(1, 0, 0, 38)
+minimizedView.Position = UDim2.new(0, 0, 0, 0)
+minimizedView.BackgroundTransparency = 1
+minimizedView.ZIndex = 110
+minimizedView.Parent = notchFrame
+
+local minIcon = Instance.new("ImageLabel")
+minIcon.Name = "MinIcon"
+minIcon.Size = UDim2.new(0, 24, 0, 24)
+minIcon.Position = UDim2.new(0, 12, 0.5, 0)
+minIcon.AnchorPoint = Vector2.new(0, 0.5)
+minIcon.BackgroundTransparency = 1
+minIcon.Image = kittyToggleAsset
+minIcon.ScaleType = Enum.ScaleType.Fit
+minIcon.ZIndex = 111
+minIcon.Parent = minimizedView
+
+local minDivider = Instance.new("Frame")
+minDivider.Name = "MinDivider"
+minDivider.Size = UDim2.new(0, 1, 0, 15)
+minDivider.Position = UDim2.new(0, 44, 0.5, 0)
+minDivider.AnchorPoint = Vector2.new(0, 0.5)
+minDivider.BackgroundColor3 = Color3.fromRGB(75, 75, 88)
+minDivider.BackgroundTransparency = 0.5
+minDivider.BorderSizePixel = 0
+minDivider.ZIndex = 111
+minDivider.Parent = minimizedView
+
+local minTitle = Instance.new("TextLabel")
+minTitle.Name = "MinTitle"
+minTitle.Size = UDim2.new(0, 120, 1, 0)
+minTitle.Position = UDim2.new(0, 54, 0, 0)
+minTitle.BackgroundTransparency = 1
+minTitle.Text = "Kitty Hub"
+minTitle.TextColor3 = NOTCH_COLOR_TEXT_WHITE
+minTitle.FontFace = Font.fromName("Poppins", Enum.FontWeight.Bold)
+minTitle.TextSize = 14
+minTitle.TextXAlignment = Enum.TextXAlignment.Left
+minTitle.ZIndex = 111
+minTitle.Parent = minimizedView
+
+local minDot = Instance.new("Frame")
+minDot.Name = "MinDot"
+minDot.Size = UDim2.new(0, 7, 0, 7)
+minDot.Position = UDim2.new(1, -16, 0.5, 0)
+minDot.AnchorPoint = Vector2.new(0.5, 0.5)
+minDot.BackgroundColor3 = NOTCH_COLOR_ACCENT_GREEN
+minDot.BorderSizePixel = 0
+minDot.ZIndex = 111
+minDot.Parent = minimizedView
+
+local minDotCorner = Instance.new("UICorner")
+minDotCorner.CornerRadius = UDim.new(1, 0)
+minDotCorner.Parent = minDot
+
+-- ------------------------------------------------------------------------------
+-- Vista Expandida (Painel de Informações)
+-- ------------------------------------------------------------------------------
+local expandedView = Instance.new("Frame")
+expandedView.Name = "ExpandedView"
+expandedView.Size = NOTCH_EXP_SIZE
+expandedView.Position = UDim2.new(0, 0, 0, 0)
+expandedView.BackgroundTransparency = 1
+expandedView.Visible = false
+expandedView.ZIndex = 120
+expandedView.Parent = notchFrame
+
+-- Header: Avatar + User Info
+local avatarImg = Instance.new("ImageLabel")
+avatarImg.Name = "Avatar"
+avatarImg.Size = UDim2.new(0, 52, 0, 52)
+avatarImg.Position = UDim2.new(0, 18, 0, 14)
+avatarImg.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+avatarImg.BackgroundTransparency = 0.3
+avatarImg.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LocalPlayer.UserId) .. "&w=150&h=150"
+avatarImg.ZIndex = 125
+avatarImg.Parent = expandedView
+
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(1, 0)
+avatarCorner.Parent = avatarImg
+
+local avatarStroke = Instance.new("UIStroke")
+avatarStroke.Color = Color3.fromRGB(85, 80, 100)
+avatarStroke.Thickness = 1.2
+avatarStroke.Parent = avatarImg
+
+local nameLabel = Instance.new("TextLabel")
+nameLabel.Name = "DisplayName"
+nameLabel.Size = UDim2.new(0, 200, 0, 24)
+nameLabel.Position = UDim2.new(0, 80, 0, 16)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text = notchPlayerDisplayName
+nameLabel.TextColor3 = NOTCH_COLOR_TEXT_WHITE
+nameLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.SemiBold)
+nameLabel.TextSize = 19
+nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+nameLabel.ZIndex = 125
+nameLabel.Parent = expandedView
+
+local tagLabel = Instance.new("TextLabel")
+tagLabel.Name = "GameTag"
+tagLabel.Size = UDim2.new(0, 200, 0, 18)
+tagLabel.Position = UDim2.new(0, 80, 0, 42)
+tagLabel.BackgroundTransparency = 1
+tagLabel.Text = currentGameTitle
+tagLabel.TextColor3 = NOTCH_COLOR_TEXT_TAG
+tagLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.Medium)
+tagLabel.TextSize = 13
+tagLabel.TextXAlignment = Enum.TextXAlignment.Left
+tagLabel.TextTruncate = Enum.TextTruncate.AtEnd
+tagLabel.ZIndex = 125
+tagLabel.Parent = expandedView
+
+-- Top Right: Session Timer
+local timerValueLabel = Instance.new("TextLabel")
+timerValueLabel.Name = "TimerValue"
+timerValueLabel.Size = UDim2.new(0, 140, 0, 26)
+timerValueLabel.Position = UDim2.new(1, -20, 0, 14)
+timerValueLabel.AnchorPoint = Vector2.new(1, 0)
+timerValueLabel.BackgroundTransparency = 1
+timerValueLabel.Text = "0m 00s"
+timerValueLabel.TextColor3 = NOTCH_COLOR_TEXT_WHITE
+timerValueLabel.FontFace = Font.fromName("RobotoMono", Enum.FontWeight.SemiBold)
+timerValueLabel.TextSize = 22
+timerValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+timerValueLabel.ZIndex = 125
+timerValueLabel.Parent = expandedView
+
+local timerSubLabel = Instance.new("TextLabel")
+timerSubLabel.Name = "TimerSub"
+timerSubLabel.Size = UDim2.new(0, 140, 0, 16)
+timerSubLabel.Position = UDim2.new(1, -20, 0, 42)
+timerSubLabel.AnchorPoint = Vector2.new(1, 0)
+timerSubLabel.BackgroundTransparency = 1
+timerSubLabel.Text = "session"
+timerSubLabel.TextColor3 = NOTCH_COLOR_TEXT_MUTED
+timerSubLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.Regular)
+timerSubLabel.TextSize = 12
+timerSubLabel.TextXAlignment = Enum.TextXAlignment.Right
+timerSubLabel.ZIndex = 125
+timerSubLabel.Parent = expandedView
+
+-- ------------------------------------------------------------------------------
+-- Middle Row: FPS & Ping Stats (Card Dividers com Linhas Verdes de Destaque)
+-- ------------------------------------------------------------------------------
+local statsContainer = Instance.new("Frame")
+statsContainer.Name = "StatsContainer"
+statsContainer.Size = UDim2.new(1, -36, 0, 46)
+statsContainer.Position = UDim2.new(0, 18, 0, 78)
+statsContainer.BackgroundTransparency = 1
+statsContainer.ZIndex = 125
+statsContainer.Parent = expandedView
+
+-- FPS Block (Left)
+local fpsBlock = Instance.new("Frame")
+fpsBlock.Name = "FpsBlock"
+fpsBlock.Size = UDim2.new(0.48, 0, 1, 0)
+fpsBlock.Position = UDim2.new(0, 0, 0, 0)
+fpsBlock.BackgroundTransparency = 1
+fpsBlock.ZIndex = 126
+fpsBlock.Parent = statsContainer
+
+local fpsValueLabel = Instance.new("TextLabel")
+fpsValueLabel.Name = "FpsValue"
+fpsValueLabel.Size = UDim2.new(0.5, 0, 0, 22)
+fpsValueLabel.Position = UDim2.new(0, 0, 0, 0)
+fpsValueLabel.BackgroundTransparency = 1
+fpsValueLabel.Text = "60 <font size=\"12\" color=\"rgb(140,140,152)\">fps</font>"
+fpsValueLabel.RichText = true
+fpsValueLabel.TextColor3 = NOTCH_COLOR_TEXT_WHITE
+fpsValueLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.Bold)
+fpsValueLabel.TextSize = 18
+fpsValueLabel.TextXAlignment = Enum.TextXAlignment.Left
+fpsValueLabel.ZIndex = 127
+fpsValueLabel.Parent = fpsBlock
+
+local fpsTitleLabel = Instance.new("TextLabel")
+fpsTitleLabel.Name = "FpsTitle"
+fpsTitleLabel.Size = UDim2.new(0.5, 0, 0, 22)
+fpsTitleLabel.Position = UDim2.new(0.5, 0, 0, 0)
+fpsTitleLabel.BackgroundTransparency = 1
+fpsTitleLabel.Text = "FRAME RATE"
+fpsTitleLabel.TextColor3 = NOTCH_COLOR_TEXT_MUTED
+fpsTitleLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.SemiBold)
+fpsTitleLabel.TextSize = 10
+fpsTitleLabel.TextXAlignment = Enum.TextXAlignment.Right
+fpsTitleLabel.ZIndex = 127
+fpsTitleLabel.Parent = fpsBlock
+
+local fpsUnderline = Instance.new("Frame")
+fpsUnderline.Name = "FpsUnderline"
+fpsUnderline.Size = UDim2.new(1, 0, 0, 2.5)
+fpsUnderline.Position = UDim2.new(0, 0, 1, -2)
+fpsUnderline.BackgroundColor3 = NOTCH_COLOR_ACCENT_GREEN
+fpsUnderline.BorderSizePixel = 0
+fpsUnderline.ZIndex = 127
+fpsUnderline.Parent = fpsBlock
+
+local fpsUnderlineCorner = Instance.new("UICorner")
+fpsUnderlineCorner.CornerRadius = UDim.new(1, 0)
+fpsUnderlineCorner.Parent = fpsUnderline
+
+-- Ping Block (Right)
+local pingBlock = Instance.new("Frame")
+pingBlock.Name = "PingBlock"
+pingBlock.Size = UDim2.new(0.48, 0, 1, 0)
+pingBlock.Position = UDim2.new(0.52, 0, 0, 0)
+pingBlock.BackgroundTransparency = 1
+pingBlock.ZIndex = 126
+pingBlock.Parent = statsContainer
+
+local pingValueLabel = Instance.new("TextLabel")
+pingValueLabel.Name = "PingValue"
+pingValueLabel.Size = UDim2.new(0.5, 0, 0, 22)
+pingValueLabel.Position = UDim2.new(0, 0, 0, 0)
+pingValueLabel.BackgroundTransparency = 1
+pingValueLabel.Text = "40 <font size=\"12\" color=\"rgb(140,140,152)\">ms</font>"
+pingValueLabel.RichText = true
+pingValueLabel.TextColor3 = NOTCH_COLOR_TEXT_WHITE
+pingValueLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.Bold)
+pingValueLabel.TextSize = 18
+pingValueLabel.TextXAlignment = Enum.TextXAlignment.Left
+pingValueLabel.ZIndex = 127
+pingValueLabel.Parent = pingBlock
+
+local pingTitleLabel = Instance.new("TextLabel")
+pingTitleLabel.Name = "PingTitle"
+pingTitleLabel.Size = UDim2.new(0.5, 0, 0, 22)
+pingTitleLabel.Position = UDim2.new(0.5, 0, 0, 0)
+pingTitleLabel.BackgroundTransparency = 1
+pingTitleLabel.Text = "PING"
+pingTitleLabel.TextColor3 = NOTCH_COLOR_TEXT_MUTED
+pingTitleLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.SemiBold)
+pingTitleLabel.TextSize = 10
+pingTitleLabel.TextXAlignment = Enum.TextXAlignment.Right
+pingTitleLabel.ZIndex = 127
+pingTitleLabel.Parent = pingBlock
+
+local pingUnderline = Instance.new("Frame")
+pingUnderline.Name = "PingUnderline"
+pingUnderline.Size = UDim2.new(1, 0, 0, 2.5)
+pingUnderline.Position = UDim2.new(0, 0, 1, -2)
+pingUnderline.BackgroundColor3 = NOTCH_COLOR_ACCENT_GREEN
+pingUnderline.BorderSizePixel = 0
+pingUnderline.ZIndex = 127
+pingUnderline.Parent = pingBlock
+
+local pingUnderlineCorner = Instance.new("UICorner")
+pingUnderlineCorner.CornerRadius = UDim.new(1, 0)
+pingUnderlineCorner.Parent = pingUnderline
+
+-- ------------------------------------------------------------------------------
+-- Bottom Row: Action / Open Hint
+-- ------------------------------------------------------------------------------
+local hintLabel = Instance.new("TextLabel")
+hintLabel.Name = "HintLabel"
+hintLabel.Size = UDim2.new(1, -40, 0, 20)
+hintLabel.Position = UDim2.new(0, 20, 1, -24)
+hintLabel.BackgroundTransparency = 1
+hintLabel.Text = "Click or press X to open"
+hintLabel.TextColor3 = NOTCH_COLOR_HINT
+hintLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.Medium)
+hintLabel.TextSize = 12
+hintLabel.TextXAlignment = Enum.TextXAlignment.Left
+hintLabel.ZIndex = 128
+hintLabel.Parent = expandedView
+
+-- ==============================================================================
+-- Lógica de Animações do Notch
+-- ==============================================================================
+local isNotchExpanded = false
+local isNotchAnimating = false
+local isNotchHovered = false
+local notchLeaveDebounceThread = nil
+
+local function setViewTransparency(view: Instance, transparency: number, duration: number)
+	for _, desc in ipairs(view:GetDescendants()) do
+		if desc:IsA("TextLabel") then
+			TweenService:Create(desc, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				TextTransparency = transparency,
+			}):Play()
+		elseif desc:IsA("ImageLabel") then
+			TweenService:Create(desc, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				ImageTransparency = transparency,
+			}):Play()
+		elseif desc:IsA("Frame") and (desc.Name:find("Underline") or desc.Name:find("Dot") or desc.Name:find("Divider")) then
+			TweenService:Create(desc, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				BackgroundTransparency = transparency,
+			}):Play()
 		end
-		if not isfile(path) then
-			writefile(path, game:HttpGet("https://kittyhub.org/images/KittyLogo.png"))
-		end
-		asset = getcustomasset(path)
+	end
+end
+
+local function expandNotch()
+	if isNotchExpanded or isNotchAnimating then return end
+	isNotchAnimating = true
+	isNotchExpanded = true
+
+	-- Pop-out Bounce (1.0 -> 1.05 -> 1.0)
+	TweenService:Create(notchScale, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Scale = 1.05,
+	}):Play()
+
+	task.delay(0.14, function()
+		TweenService:Create(notchScale, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Scale = 1.0,
+		}):Play()
+	end)
+
+	setViewTransparency(minimizedView, 1, 0.15)
+
+	TweenService:Create(notchCorner, TweenInfo.new(0.35, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
+		CornerRadius = UDim.new(0, 22),
+	}):Play()
+
+	local resizeTween = TweenService:Create(notchFrame, TweenInfo.new(0.4, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
+		Size = NOTCH_EXP_SIZE,
+		BackgroundTransparency = 0.05,
+	})
+	resizeTween:Play()
+
+	task.delay(0.1, function()
+		minimizedView.Visible = false
+		expandedView.Visible = true
+		setViewTransparency(expandedView, 0, 0.25)
+	end)
+
+	task.delay(0.4, function()
+		isNotchAnimating = false
 	end)
 end
-uiUtils.ToggleBtn.Image = asset or "rbxassetid://108438928597855"
-uiUtils.ToggleBtn.ScaleType = Enum.ScaleType.Fit
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
-UICorner.Parent = uiUtils.ToggleBtn
+local function collapseNotch()
+	if not isNotchExpanded or isNotchAnimating then return end
+	isNotchAnimating = true
+	isNotchExpanded = false
 
-uiUtils.BorderFrame = Instance.new("Frame")
-uiUtils.BorderFrame.Name = generateRandomString(math.random(8, 16))
-uiUtils.BorderFrame.Size = UDim2.new(1, 6, 1, 6)
-uiUtils.BorderFrame.Position = UDim2.new(0, -3, 0, -3)
-uiUtils.BorderFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-uiUtils.BorderFrame.BorderSizePixel = 0
-uiUtils.BorderFrame.ZIndex = uiUtils.ToggleBtn.ZIndex - 1
-uiUtils.BorderFrame.Parent = uiUtils.ToggleBtn
+	setViewTransparency(expandedView, 1, 0.15)
 
-local borderCorner = Instance.new("UICorner")
-borderCorner.CornerRadius = UDim.new(0, 11)
-borderCorner.Parent = uiUtils.BorderFrame
+	task.delay(0.1, function()
+		expandedView.Visible = false
+		minimizedView.Visible = true
+		setViewTransparency(minimizedView, 0, 0.2)
+	end)
 
-local borderGradient = Instance.new("UIGradient")
-borderGradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(228, 22, 86)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-})
-borderGradient.Rotation = 0
-borderGradient.Parent = uiUtils.BorderFrame
+	TweenService:Create(notchCorner, TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
+		CornerRadius = UDim.new(0, 19),
+	}):Play()
 
-local angle = 0
-local toggleBtnRotationConn = RunService.Heartbeat:Connect(function(dt)
-	angle = (angle + dt * 90) % 360
-	borderGradient.Rotation = angle
-end)
+	local resizeTween = TweenService:Create(notchFrame, TweenInfo.new(0.3, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out), {
+		Size = NOTCH_MIN_SIZE,
+		BackgroundTransparency = 0.12,
+	})
+	resizeTween:Play()
 
-uiUtils.BorderFrame.BackgroundTransparency = 1
-TweenService:Create(uiUtils.BorderFrame, TweenInfo.new(2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-	BackgroundTransparency = 0,
-}):Play()
+	task.delay(0.3, function()
+		isNotchAnimating = false
+	end)
+end
 
-TweenService:Create(uiUtils.ToggleBtn, TweenInfo.new(2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-	ImageTransparency = 0,
-}):Play()
+-- ==============================================================================
+-- Handlers de Interação & Arraste Suave (Draggable Support)
+-- ==============================================================================
+local notchDragging = false
+local notchDragged = false
+local notchDragStart = nil
+local notchStartPos = nil
+local notchDragInput = nil
 
--- Dragging logic
-local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
-local dragged = false
+local function toggleObsidianWindow()
+	local toggled = false
+	if uiUtils.Window and typeof(uiUtils.Window.Toggle) == "function" then
+		uiUtils.Window:Toggle()
+		toggled = true
+	elseif afkScreen.Window and typeof(afkScreen.Window.Toggle) == "function" then
+		afkScreen.Window:Toggle()
+		toggled = true
+	end
+	return toggled
+end
 
-local toggleInputBeganConn = uiUtils.ToggleBtn.InputBegan:Connect(function(input)
+local notchInputBeganConn = interactionBtn.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragged = false
-		dragStart = input.Position
-		startPos = uiUtils.ToggleBtn.Position
+		notchDragging = true
+		notchDragged = false
+		notchDragStart = input.Position
+		notchStartPos = notchFrame.Position
 
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
+				notchDragging = false
 			end
 		end)
 	end
 end)
 
-local toggleInputChangedConn = uiUtils.ToggleBtn.InputChanged:Connect(function(input)
+local notchInputChangedConn = interactionBtn.InputChanged:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
+		notchDragInput = input
 	end
 end)
 
-local globalInputChangedConn = UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		local delta = input.Position - dragStart
-		if delta.Magnitude > 5 then
-			dragged = true
+local notchGlobalInputConn = UserInputService.InputChanged:Connect(function(input)
+	if input == notchDragInput and notchDragging then
+		local delta = input.Position - notchDragStart
+		if delta.Magnitude > 6 then
+			notchDragged = true
+			notchFrame.Position = UDim2.new(
+				notchStartPos.X.Scale,
+				notchStartPos.X.Offset + delta.X,
+				notchStartPos.Y.Scale,
+				notchStartPos.Y.Offset + delta.Y
+			)
 		end
-		uiUtils.ToggleBtn.Position =
-			UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
 
--- Quando clicado (sem arrastar), alterna a visibilidade da janela da Obsidian (uiUtils.Window:Toggle())
-local debounce = false
-local toggleInputEndedConn = uiUtils.ToggleBtn.InputEnded:Connect(function(input)
+local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		if not dragged then
-			if not debounce then
-				debounce = true
-				if uiUtils.Window and typeof(uiUtils.Window.Toggle) == "function" then
-					uiUtils.Window:Toggle()
-				elseif afkScreen.Window and typeof(afkScreen.Window.Toggle) == "function" then
-					afkScreen.Window:Toggle()
-				end
-				task.delay(0.4, function()
-					debounce = false
-				end)
+		if not notchDragged then
+			if not isNotchExpanded then
+				expandNotch()
+			else
+				toggleObsidianWindow()
+				collapseNotch()
 			end
 		end
-		dragged = false
+		notchDragged = false
 	end
 end)
 
--- Espelha as referências do botão em afkScreen
+local notchMouseEnterConn = interactionBtn.MouseEnter:Connect(function()
+	isNotchHovered = true
+	if notchLeaveDebounceThread then
+		task.cancel(notchLeaveDebounceThread)
+		notchLeaveDebounceThread = nil
+	end
+	expandNotch()
+end)
+
+local notchMouseLeaveConn = interactionBtn.MouseLeave:Connect(function()
+	isNotchHovered = false
+	if notchLeaveDebounceThread then
+		task.cancel(notchLeaveDebounceThread)
+	end
+	notchLeaveDebounceThread = task.delay(0.28, function()
+		if not isNotchHovered and not notchDragging then
+			collapseNotch()
+		end
+		notchLeaveDebounceThread = nil
+	end)
+end)
+
+local notchKeybindConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if UserInputService:GetFocusedTextBox() ~= nil then return end
+	if input.KeyCode == Enum.KeyCode.X then
+		toggleObsidianWindow()
+		if isNotchExpanded then
+			collapseNotch()
+		end
+	end
+end)
+
+-- Fechar ao clicar fora da área expandida
+local notchOutsideClickConn = UserInputService.InputBegan:Connect(function(input)
+	if not isNotchExpanded or isNotchAnimating then return end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		local clickPos = Vector2.new(input.Position.X, input.Position.Y)
+		local framePos = notchFrame.AbsolutePosition
+		local frameSize = notchFrame.AbsoluteSize
+		local isInside = (clickPos.X >= framePos.X and clickPos.X <= framePos.X + frameSize.X and
+		                  clickPos.Y >= framePos.Y and clickPos.Y <= framePos.Y + frameSize.Y)
+		if not isInside then
+			collapseNotch()
+		end
+	end
+end)
+
+-- Live Stats Loop
+local notchSessionStart = os.time()
+local notchFrameTimes = {}
+local notchFps = 60
+local notchPing = 40
+
+local notchRenderConn = RunService.RenderStepped:Connect(function(dt)
+	table.insert(notchFrameTimes, dt)
+	if #notchFrameTimes > 30 then
+		table.remove(notchFrameTimes, 1)
+	end
+	local sum = 0
+	for _, t in ipairs(notchFrameTimes) do sum = sum + t end
+	notchFps = math.floor(0.5 + (#notchFrameTimes / math.max(0.0001, sum)))
+end)
+
+local notchStatsRunning = true
+task.spawn(function()
+	while notchStatsRunning and uiUtils.ToggleGui and uiUtils.ToggleGui.Parent do
+		local elapsed = os.time() - notchSessionStart
+		local hours = math.floor(elapsed / 3600)
+		local mins = math.floor((elapsed % 3600) / 60)
+		local secs = elapsed % 60
+		if hours > 0 then
+			timerValueLabel.Text = string.format("%dh %02dm", hours, mins)
+		else
+			timerValueLabel.Text = string.format("%dm %02ds", mins, secs)
+		end
+
+		pcall(function()
+			local netPing = LocalPlayer:GetNetworkPing()
+			if netPing and netPing > 0 then
+				notchPing = math.floor(netPing * 1000)
+			else
+				local dataPing = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+				if dataPing then
+					notchPing = math.floor(dataPing)
+				end
+			end
+		end)
+
+		fpsValueLabel.Text = tostring(notchFps) .. " <font size=\"12\" color=\"rgb(140,140,152)\">fps</font>"
+		pingValueLabel.Text = tostring(notchPing) .. " <font size=\"12\" color=\"rgb(140,140,152)\">ms</font>"
+
+		task.wait(0.5)
+	end
+end)
+
+-- Espelha as referências do botão em uiUtils e afkScreen
+uiUtils.ToggleBtn = notchFrame
+uiUtils.BorderFrame = notchFrame
+
 afkScreen.ToggleGui = uiUtils.ToggleGui
 afkScreen.ToggleBtn = uiUtils.ToggleBtn
 afkScreen.BorderFrame = uiUtils.BorderFrame
+afkScreen.ExpandNotch = expandNotch
+afkScreen.CollapseNotch = collapseNotch
 
 -- ══════════════════════════════════════════════════════════════════
 -- MÉTODOS PÚBLICOS DA API
@@ -1236,27 +1737,18 @@ function afkScreen.Destroy()
 		viewportConnection = nil
 	end
 
-	-- Limpa conexões e instâncias do botão flutuante da Obsidian
-	if toggleBtnRotationConn then
-		toggleBtnRotationConn:Disconnect()
-		toggleBtnRotationConn = nil
-	end
-	if toggleInputBeganConn then
-		toggleInputBeganConn:Disconnect()
-		toggleInputBeganConn = nil
-	end
-	if toggleInputChangedConn then
-		toggleInputChangedConn:Disconnect()
-		toggleInputChangedConn = nil
-	end
-	if globalInputChangedConn then
-		globalInputChangedConn:Disconnect()
-		globalInputChangedConn = nil
-	end
-	if toggleInputEndedConn then
-		toggleInputEndedConn:Disconnect()
-		toggleInputEndedConn = nil
-	end
+	-- Limpa conexões e instâncias do Notch Toggle Button da Obsidian
+	notchStatsRunning = false
+	if notchRenderConn then notchRenderConn:Disconnect(); notchRenderConn = nil end
+	if notchKeybindConn then notchKeybindConn:Disconnect(); notchKeybindConn = nil end
+	if notchOutsideClickConn then notchOutsideClickConn:Disconnect(); notchOutsideClickConn = nil end
+	if notchInputBeganConn then notchInputBeganConn:Disconnect(); notchInputBeganConn = nil end
+	if notchInputChangedConn then notchInputChangedConn:Disconnect(); notchInputChangedConn = nil end
+	if notchGlobalInputConn then notchGlobalInputConn:Disconnect(); notchGlobalInputConn = nil end
+	if notchInputEndedConn then notchInputEndedConn:Disconnect(); notchInputEndedConn = nil end
+	if notchMouseEnterConn then notchMouseEnterConn:Disconnect(); notchMouseEnterConn = nil end
+	if notchMouseLeaveConn then notchMouseLeaveConn:Disconnect(); notchMouseLeaveConn = nil end
+	if notchLeaveDebounceThread then task.cancel(notchLeaveDebounceThread); notchLeaveDebounceThread = nil end
 
 	if uiUtils.ToggleGui then
 		pcall(function()
