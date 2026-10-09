@@ -1305,13 +1305,22 @@ timerSubLabel.TextXAlignment = Enum.TextXAlignment.Right
 timerSubLabel.ZIndex = 125
 timerSubLabel.Parent = expandedView
 
+-- Constantes Visuais do Histograma (FPS & Ping)
+local HISTO_BARS_COUNT = 24
+local HISTO_BAR_WIDTH = 3
+local HISTO_BAR_GAP = 4
+local HISTO_MAX_HEIGHT = 20
+local COLOR_BAR_ACTIVE = Color3.fromRGB(120, 215, 155) -- #78D79B (Verde Menta)
+local COLOR_BAR_HISTORY = Color3.fromRGB(74, 53, 69)    -- #4A3545 (Roxo Suave Muted)
+local COLOR_BAR_BASELINE = Color3.fromRGB(56, 52, 70)   -- #383446
+
 -- ------------------------------------------------------------------------------
--- Middle Row: FPS & Ping Stats (Card Dividers)
+-- Middle Row: FPS & Ping Stats (Card Dividers com Histograma Animado)
 -- ------------------------------------------------------------------------------
 local statsContainer = Instance.new("Frame")
 statsContainer.Name = "StatsContainer"
-statsContainer.Size = UDim2.new(1, -36, 0, 46)
-statsContainer.Position = UDim2.new(0, 18, 0, 78)
+statsContainer.Size = UDim2.new(1, -36, 0, 50)
+statsContainer.Position = UDim2.new(0, 18, 0, 74)
 statsContainer.BackgroundTransparency = 1
 statsContainer.ZIndex = 125
 statsContainer.Parent = expandedView
@@ -1327,12 +1336,11 @@ fpsBlock.Parent = statsContainer
 
 local fpsValueLabel = Instance.new("TextLabel")
 fpsValueLabel.Name = "FpsValue"
-fpsValueLabel.Size = UDim2.new(0.5, 0, 0, 22)
+fpsValueLabel.Size = UDim2.new(0.5, 0, 0, 20)
 fpsValueLabel.Position = UDim2.new(0, 0, 0, 0)
 fpsValueLabel.BackgroundTransparency = 1
-fpsValueLabel.Text = "60 <font size=\"12\" color=\"rgb(140,140,152)\">fps</font>"
-fpsValueLabel.RichText = true
-fpsValueLabel.TextColor3 = NOTCH_COLOR_TEXT_WHITE
+fpsValueLabel.Text = "60"
+fpsValueLabel.TextColor3 = NOTCH_COLOR_ACCENT_GREEN
 fpsValueLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.Bold)
 fpsValueLabel.TextSize = 18
 fpsValueLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1341,7 +1349,7 @@ fpsValueLabel.Parent = fpsBlock
 
 local fpsTitleLabel = Instance.new("TextLabel")
 fpsTitleLabel.Name = "FpsTitle"
-fpsTitleLabel.Size = UDim2.new(0.5, 0, 0, 22)
+fpsTitleLabel.Size = UDim2.new(0.5, 0, 0, 20)
 fpsTitleLabel.Position = UDim2.new(0.5, 0, 0, 0)
 fpsTitleLabel.BackgroundTransparency = 1
 fpsTitleLabel.Text = "FRAME RATE"
@@ -1352,18 +1360,40 @@ fpsTitleLabel.TextXAlignment = Enum.TextXAlignment.Right
 fpsTitleLabel.ZIndex = 127
 fpsTitleLabel.Parent = fpsBlock
 
-local fpsUnderline = Instance.new("Frame")
-fpsUnderline.Name = "FpsUnderline"
-fpsUnderline.Size = UDim2.new(1, 0, 0, 2.5)
-fpsUnderline.Position = UDim2.new(0, 0, 1, -2)
-fpsUnderline.BackgroundColor3 = NOTCH_COLOR_ACCENT_GREEN
-fpsUnderline.BorderSizePixel = 0
-fpsUnderline.ZIndex = 127
-fpsUnderline.Parent = fpsBlock
+local fpsGraph = Instance.new("Frame")
+fpsGraph.Name = "FpsGraph"
+fpsGraph.Size = UDim2.new(1, 0, 0, 24)
+fpsGraph.Position = UDim2.new(0, 0, 0, 24)
+fpsGraph.BackgroundTransparency = 1
+fpsGraph.ZIndex = 126
+fpsGraph.Parent = fpsBlock
 
-local fpsUnderlineCorner = Instance.new("UICorner")
-fpsUnderlineCorner.CornerRadius = UDim.new(1, 0)
-fpsUnderlineCorner.Parent = fpsUnderline
+local fpsBaseline = Instance.new("Frame")
+fpsBaseline.Name = "FpsBaseline"
+fpsBaseline.Size = UDim2.new(1, 0, 0, 1)
+fpsBaseline.Position = UDim2.new(0, 0, 1, 0)
+fpsBaseline.BackgroundColor3 = COLOR_BAR_BASELINE
+fpsBaseline.BackgroundTransparency = 0.5
+fpsBaseline.BorderSizePixel = 0
+fpsBaseline.ZIndex = 126
+fpsBaseline.Parent = fpsGraph
+
+local fpsBars = table.create(HISTO_BARS_COUNT)
+for i = 1, HISTO_BARS_COUNT do
+	local bar = Instance.new("Frame")
+	bar.Name = "FpsBar_" .. i
+	bar.AnchorPoint = Vector2.new(0, 1)
+	bar.Position = UDim2.new(0, (i - 1) * (HISTO_BAR_WIDTH + HISTO_BAR_GAP), 1, 0)
+	bar.Size = UDim2.new(0, HISTO_BAR_WIDTH, 0, 2)
+	bar.BackgroundColor3 = (i == HISTO_BARS_COUNT and COLOR_BAR_ACTIVE or COLOR_BAR_HISTORY)
+	bar.BorderSizePixel = 0
+	bar.ZIndex = 127
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 1)
+	c.Parent = bar
+	bar.Parent = fpsGraph
+	fpsBars[i] = bar
+end
 
 -- Ping Block (Right)
 local pingBlock = Instance.new("Frame")
@@ -1376,12 +1406,11 @@ pingBlock.Parent = statsContainer
 
 local pingValueLabel = Instance.new("TextLabel")
 pingValueLabel.Name = "PingValue"
-pingValueLabel.Size = UDim2.new(0.5, 0, 0, 22)
+pingValueLabel.Size = UDim2.new(0.5, 0, 0, 20)
 pingValueLabel.Position = UDim2.new(0, 0, 0, 0)
 pingValueLabel.BackgroundTransparency = 1
-pingValueLabel.Text = "40 <font size=\"12\" color=\"rgb(140,140,152)\">ms</font>"
-pingValueLabel.RichText = true
-pingValueLabel.TextColor3 = NOTCH_COLOR_TEXT_WHITE
+pingValueLabel.Text = "40ms"
+pingValueLabel.TextColor3 = NOTCH_COLOR_ACCENT_GREEN
 pingValueLabel.FontFace = Font.fromName("Inter", Enum.FontWeight.Bold)
 pingValueLabel.TextSize = 18
 pingValueLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1390,7 +1419,7 @@ pingValueLabel.Parent = pingBlock
 
 local pingTitleLabel = Instance.new("TextLabel")
 pingTitleLabel.Name = "PingTitle"
-pingTitleLabel.Size = UDim2.new(0.5, 0, 0, 22)
+pingTitleLabel.Size = UDim2.new(0.5, 0, 0, 20)
 pingTitleLabel.Position = UDim2.new(0.5, 0, 0, 0)
 pingTitleLabel.BackgroundTransparency = 1
 pingTitleLabel.Text = "PING"
@@ -1401,18 +1430,40 @@ pingTitleLabel.TextXAlignment = Enum.TextXAlignment.Right
 pingTitleLabel.ZIndex = 127
 pingTitleLabel.Parent = pingBlock
 
-local pingUnderline = Instance.new("Frame")
-pingUnderline.Name = "PingUnderline"
-pingUnderline.Size = UDim2.new(1, 0, 0, 2.5)
-pingUnderline.Position = UDim2.new(0, 0, 1, -2)
-pingUnderline.BackgroundColor3 = NOTCH_COLOR_ACCENT_GREEN
-pingUnderline.BorderSizePixel = 0
-pingUnderline.ZIndex = 127
-pingUnderline.Parent = pingBlock
+local pingGraph = Instance.new("Frame")
+pingGraph.Name = "PingGraph"
+pingGraph.Size = UDim2.new(1, 0, 0, 24)
+pingGraph.Position = UDim2.new(0, 0, 0, 24)
+pingGraph.BackgroundTransparency = 1
+pingGraph.ZIndex = 126
+pingGraph.Parent = pingBlock
 
-local pingUnderlineCorner = Instance.new("UICorner")
-pingUnderlineCorner.CornerRadius = UDim.new(1, 0)
-pingUnderlineCorner.Parent = pingUnderline
+local pingBaseline = Instance.new("Frame")
+pingBaseline.Name = "PingBaseline"
+pingBaseline.Size = UDim2.new(1, 0, 0, 1)
+pingBaseline.Position = UDim2.new(0, 0, 1, 0)
+pingBaseline.BackgroundColor3 = COLOR_BAR_BASELINE
+pingBaseline.BackgroundTransparency = 0.5
+pingBaseline.BorderSizePixel = 0
+pingBaseline.ZIndex = 126
+pingBaseline.Parent = pingGraph
+
+local pingBars = table.create(HISTO_BARS_COUNT)
+for i = 1, HISTO_BARS_COUNT do
+	local bar = Instance.new("Frame")
+	bar.Name = "PingBar_" .. i
+	bar.AnchorPoint = Vector2.new(0, 1)
+	bar.Position = UDim2.new(0, (i - 1) * (HISTO_BAR_WIDTH + HISTO_BAR_GAP), 1, 0)
+	bar.Size = UDim2.new(0, HISTO_BAR_WIDTH, 0, 2)
+	bar.BackgroundColor3 = (i == HISTO_BARS_COUNT and COLOR_BAR_ACTIVE or COLOR_BAR_HISTORY)
+	bar.BorderSizePixel = 0
+	bar.ZIndex = 127
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 1)
+	c.Parent = bar
+	bar.Parent = pingGraph
+	pingBars[i] = bar
+end
 
 -- ------------------------------------------------------------------------------
 -- Bottom Row: Action / Open Hint
@@ -1448,7 +1499,7 @@ local function setViewTransparency(view: Instance, transparency: number, duratio
 			TweenService:Create(desc, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 				ImageTransparency = transparency,
 			}):Play()
-		elseif desc:IsA("Frame") and (desc.Name:find("Underline") or desc.Name:find("Dot") or desc.Name:find("Divider")) then
+		elseif desc:IsA("Frame") and (desc.Name:find("Underline") or desc.Name:find("Dot") or desc.Name:find("Divider") or desc.Name:find("Bar") or desc.Name:find("Baseline")) then
 			TweenService:Create(desc, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 				BackgroundTransparency = transparency,
 			}):Play()
@@ -1560,11 +1611,6 @@ end
 -- ==============================================================================
 -- Handlers de Interação & Arraste Suave com Motor de Direção Dinâmica
 -- ==============================================================================
-local notchDraggableEnabled = true
-local function setDraggableEnabled(enabled: boolean)
-	notchDraggableEnabled = (enabled == true)
-end
-
 local notchDragging = false
 local notchDragged = false
 local notchDragStartMouse = nil
@@ -1585,21 +1631,16 @@ end
 
 local notchInputBeganConn = interactionBtn.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		if notchDraggableEnabled then
-			notchDragging = true
-			notchDragged = false
-			notchDragStartMouse = Vector2.new(input.Position.X, input.Position.Y)
-			notchDragStartAbsPos = notchFrame.AbsolutePosition
+		notchDragging = true
+		notchDragged = false
+		notchDragStartMouse = Vector2.new(input.Position.X, input.Position.Y)
+		notchDragStartAbsPos = notchFrame.AbsolutePosition
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					notchDragging = false
-				end
-			end)
-		else
-			notchDragging = false
-			notchDragged = false
-		end
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				notchDragging = false
+			end
+		end)
 	end
 end)
 
@@ -1760,11 +1801,14 @@ local notchOutsideClickConn = UserInputService.InputBegan:Connect(function(input
 	end
 end)
 
--- Live Stats Loop
+-- Live Stats & Histogram Sampling Loop (Right -> Left slide)
 local notchSessionStart = os.time()
 local notchFrameTimes = {}
 local notchFps = 60
 local notchPing = 40
+
+local fpsHistory = table.create(HISTO_BARS_COUNT, 0)
+local pingHistory = table.create(HISTO_BARS_COUNT, 0)
 
 local notchRenderConn = RunService.RenderStepped:Connect(function(dt)
 	table.insert(notchFrameTimes, dt)
@@ -1778,15 +1822,19 @@ end)
 
 local notchStatsRunning = true
 task.spawn(function()
+	local timerTick = 0
 	while notchStatsRunning and uiUtils.ToggleGui and uiUtils.ToggleGui.Parent do
-		local elapsed = os.time() - notchSessionStart
-		local hours = math.floor(elapsed / 3600)
-		local mins = math.floor((elapsed % 3600) / 60)
-		local secs = elapsed % 60
-		if hours > 0 then
-			timerValueLabel.Text = string.format("%dh %02dm", hours, mins)
-		else
-			timerValueLabel.Text = string.format("%dm %02ds", mins, secs)
+		timerTick = timerTick + 1
+		if timerTick % 4 == 0 then
+			local elapsed = os.time() - notchSessionStart
+			local hours = math.floor(elapsed / 3600)
+			local mins = math.floor((elapsed % 3600) / 60)
+			local secs = elapsed % 60
+			if hours > 0 then
+				timerValueLabel.Text = string.format("%dh %02dm", hours, mins)
+			else
+				timerValueLabel.Text = string.format("%dm %02ds", mins, secs)
+			end
 		end
 
 		pcall(function()
@@ -1801,10 +1849,50 @@ task.spawn(function()
 			end
 		end)
 
-		fpsValueLabel.Text = tostring(notchFps) .. " <font size=\"12\" color=\"rgb(140,140,152)\">fps</font>"
-		pingValueLabel.Text = tostring(notchPing) .. " <font size=\"12\" color=\"rgb(140,140,152)\">ms</font>"
+		fpsValueLabel.Text = tostring(notchFps)
+		pingValueLabel.Text = tostring(notchPing) .. "ms"
 
-		task.wait(0.5)
+		-- Deslocamento contínuo: amostra entra pela DIREITA e anteriores deslizam para a ESQUERDA
+		table.remove(fpsHistory, 1)
+		table.insert(fpsHistory, notchFps)
+
+		table.remove(pingHistory, 1)
+		table.insert(pingHistory, notchPing)
+
+		local maxFps = 60
+		for _, v in ipairs(fpsHistory) do if v > maxFps then maxFps = v end end
+		local maxPing = 60
+		for _, v in ipairs(pingHistory) do if v > maxPing then maxPing = v end end
+
+		for i = 1, HISTO_BARS_COUNT do
+			local val = fpsHistory[i]
+			local bar = fpsBars[i]
+			if bar then
+				local h = 2
+				if val > 0 then
+					local ratio = math.clamp(val / maxFps, 0.08, 1.0)
+					h = math.clamp(math.floor(ratio * HISTO_MAX_HEIGHT), 2, HISTO_MAX_HEIGHT)
+				end
+				bar.Size = UDim2.new(0, HISTO_BAR_WIDTH, 0, h)
+				bar.BackgroundColor3 = (i == HISTO_BARS_COUNT and COLOR_BAR_ACTIVE or COLOR_BAR_HISTORY)
+			end
+		end
+
+		for i = 1, HISTO_BARS_COUNT do
+			local val = pingHistory[i]
+			local bar = pingBars[i]
+			if bar then
+				local h = 2
+				if val > 0 then
+					local ratio = math.clamp(val / maxPing, 0.08, 1.0)
+					h = math.clamp(math.floor(ratio * HISTO_MAX_HEIGHT), 2, HISTO_MAX_HEIGHT)
+				end
+				bar.Size = UDim2.new(0, HISTO_BAR_WIDTH, 0, h)
+				bar.BackgroundColor3 = (i == HISTO_BARS_COUNT and COLOR_BAR_ACTIVE or COLOR_BAR_HISTORY)
+			end
+		end
+
+		task.wait(0.12)
 	end
 end)
 
@@ -1933,24 +2021,6 @@ function afkScreen.SetBorderOutlineEnabled(...)
 	local enabled = (typeof(args[1]) == "boolean" and args[1]) or (typeof(args[2]) == "boolean" and args[2])
 	if enabled == nil then enabled = true end
 	setBorderOutlineEnabled(enabled)
-	return afkScreen
-end
-afkScreen.SetBorderGlow = afkScreen.SetBorderOutlineEnabled
-
-function afkScreen.SetDraggableEnabled(...)
-	local args = { ... }
-	local enabled = (typeof(args[1]) == "boolean" and args[1]) or (typeof(args[2]) == "boolean" and args[2])
-	if enabled == nil then enabled = true end
-	setDraggableEnabled(enabled)
-	return afkScreen
-end
-
-function afkScreen.ToggleNotch()
-	if isNotchExpanded then
-		collapseNotch()
-	else
-		expandNotch()
-	end
 	return afkScreen
 end
 
