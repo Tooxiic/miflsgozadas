@@ -242,10 +242,23 @@ function OverviewModule.new(uiUtils: any?, tabs: any?, options: any?)
     self.Connections = {} as {RBXScriptConnection}
 
     local env = (typeof(getgenv) == "function" and getgenv()) or _G
-    if env.AnimeBreakerOverviewUnload then
+    if type(env.KittyGs) ~= "table" then
+        env.KittyGs = {}
+    end
+    local KittyGs = env.KittyGs
+
+    if KittyGs and KittyGs.Overview and typeof(KittyGs.Overview.Unload) == "function" then
+        pcall(KittyGs.Overview.Unload)
+    elseif env.AnimeBreakerOverviewUnload then
         pcall(env.AnimeBreakerOverviewUnload)
     end
+
+    if KittyGs then
+        KittyGs.Overview = KittyGs.Overview or {}
+        KittyGs.Overview.RunToken = runToken
+    end
     env.AnimeBreakerOverviewRunToken = runToken
+    _G.AnimeBreakerOverviewRunToken = runToken
 
     local function registerConn(conn: RBXScriptConnection)
         table.insert(self.Connections, conn)
@@ -814,8 +827,9 @@ function OverviewModule.new(uiUtils: any?, tabs: any?, options: any?)
                     local fps = math.round(renderFrameCount / dtSec)
                     renderFrameCount = 0
 
-                    if _G.NotchFps and type(_G.NotchFps) == "number" and _G.NotchFps > 0 then
-                        fps = _G.NotchFps
+                    local notchFps = (KittyGs and KittyGs.NotchFps) or _G.NotchFps
+                    if notchFps and type(notchFps) == "number" and notchFps > 0 then
+                        fps = notchFps
                     end
 
                     if fps <= 0 then
@@ -844,9 +858,16 @@ function OverviewModule.new(uiUtils: any?, tabs: any?, options: any?)
     end
 
     -- Limpeza global do AnimeBreaker
-    env.AnimeBreakerOverviewUnload = function()
+    local function unloadFn()
         self:Destroy()
     end
+
+    if KittyGs then
+        KittyGs.Overview = KittyGs.Overview or {}
+        KittyGs.Overview.Unload = unloadFn
+    end
+    env.AnimeBreakerOverviewUnload = unloadFn
+    _G.AnimeBreakerOverviewUnload = unloadFn
 
     self._setMinimizedState = setMinimizedState
     return self
@@ -907,10 +928,21 @@ function OverviewModule:Minimize(state: boolean?)
 end
 
 function OverviewModule:Destroy()
+    local oldToken = self.RunToken
     self.RunToken = nil
     local env = (typeof(getgenv) == "function" and getgenv()) or _G
-    if env.AnimeBreakerOverviewRunToken == self.RunToken then
+    local KittyGs = env.KittyGs
+    if KittyGs and KittyGs.Overview then
+        if KittyGs.Overview.RunToken == oldToken or oldToken == nil then
+            KittyGs.Overview.RunToken = nil
+        end
+        KittyGs.Overview.Unload = nil
+    end
+    if env.AnimeBreakerOverviewRunToken == oldToken or oldToken == nil then
         env.AnimeBreakerOverviewRunToken = nil
+    end
+    if _G.AnimeBreakerOverviewRunToken == oldToken or oldToken == nil then
+        _G.AnimeBreakerOverviewRunToken = nil
     end
     if self._renderConn then
         pcall(function() self._renderConn:Disconnect() end)
@@ -928,6 +960,9 @@ function OverviewModule:Destroy()
     end
     if env.AnimeBreakerOverviewUnload then
         env.AnimeBreakerOverviewUnload = nil
+    end
+    if _G.AnimeBreakerOverviewUnload then
+        _G.AnimeBreakerOverviewUnload = nil
     end
 end
 
