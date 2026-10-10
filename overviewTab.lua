@@ -38,11 +38,12 @@ end
 
 return function(dashTab, ctx)
 	ctx = ctx or {}
+	local KittyGs = (typeof(getgenv) == "function" and getgenv().KittyGs) or _G.KittyGs or {}
 	local Library = ctx.Library
 	local Config = ctx.Config
 	local Toggles = ctx.Toggles
 	local uiUtils = ctx.uiUtils or {}
-	local scriptRunToken = ctx.scriptRunToken or _G.AnimeBreakerRunToken
+	local scriptRunToken = ctx.scriptRunToken or (KittyGs and KittyGs.RunToken) or _G.AnimeBreakerRunToken
 	ctx.scriptRunToken = scriptRunToken
 
 	dashTab = dashTab or (uiUtils.Tabs and uiUtils.Tabs.Dashboard)
@@ -948,6 +949,9 @@ return function(dashTab, ctx)
 		if ctx.Connections and type(ctx.Connections) == "table" then
 			table.insert(ctx.Connections, renderConn)
 		end
+		if KittyGs and type(KittyGs.Connections) == "table" then
+			table.insert(KittyGs.Connections, renderConn)
+		end
 		if _G.AnimeBreakerConnections and type(_G.AnimeBreakerConnections) == "table" then
 			table.insert(_G.AnimeBreakerConnections, renderConn)
 		end
@@ -963,7 +967,7 @@ return function(dashTab, ctx)
 	end
 
 	task.spawn(function()
-		while _G.AnimeBreakerRunToken == ctx.scriptRunToken do
+		while _G.AnimeBreakerRunToken == ctx.scriptRunToken or (KittyGs and KittyGs.RunToken == ctx.scriptRunToken) do
 			pcall(function()
 				local elapsed = os.time() - sessionStart
 				local h = math.floor(elapsed / 3600)
@@ -1001,8 +1005,9 @@ return function(dashTab, ctx)
 				local fps = math.round(renderFrameCount / dtSec)
 				renderFrameCount = 0
 
-				if _G.NotchFps and type(_G.NotchFps) == "number" and _G.NotchFps > 0 then
-					fps = _G.NotchFps
+				local notchFps = (KittyGs and KittyGs.NotchFps) or _G.NotchFps
+				if notchFps and type(notchFps) == "number" and notchFps > 0 then
+					fps = notchFps
 				end
 
 				if fps <= 0 then
