@@ -11,12 +11,18 @@ local Camera = workspace.CurrentCamera
 
 -- Global cleanup da instância anterior se recarregado
 local env = (typeof(getgenv) == "function" and getgenv()) or _G
+if type(env.KittyGs) ~= "table" then
+	env.KittyGs = {}
+end
+local KittyGs = env.KittyGs
+
 local previousWindow = nil
-if env.__KITTY_AFK and typeof(env.__KITTY_AFK) == "table" then
-	previousWindow = env.__KITTY_AFK.Window
-	if typeof(env.__KITTY_AFK.Destroy) == "function" then
+local previousAfk = (KittyGs and KittyGs.AfkScreen) or env.__KITTY_AFK
+if previousAfk and typeof(previousAfk) == "table" then
+	previousWindow = previousAfk.Window
+	if typeof(previousAfk.Destroy) == "function" then
 		pcall(function()
-			env.__KITTY_AFK:Destroy()
+			previousAfk:Destroy()
 		end)
 	end
 end
@@ -1699,7 +1705,7 @@ local function initNotch(afkScreen, uiUtils)
 			if w.MainFrame then return w end
 			if w.Window and typeof(w.Window) == "table" and w.Window.MainFrame then return w.Window end
 		end
-		local fallback = uiUtils.Window or afkScreen.Window or (env and env.uiUtils and env.uiUtils.Window) or (env and env.__KITTY_AFK and env.__KITTY_AFK.Window) or (env and env.Library and env.Library.Window)
+		local fallback = uiUtils.Window or afkScreen.Window or (KittyGs and KittyGs.AfkScreen and KittyGs.AfkScreen.Window) or (env and env.uiUtils and env.uiUtils.Window) or (env and env.__KITTY_AFK and env.__KITTY_AFK.Window) or (env and env.Library and env.Library.Window)
 		if fallback and typeof(fallback) == "table" and fallback.MainFrame then
 			return fallback
 		end
@@ -2156,6 +2162,9 @@ local function initNotch(afkScreen, uiUtils)
 	
 			notchFps = math.round(notchFrameCount / dtSec)
 			notchFrameCount = 0
+			if KittyGs then
+				KittyGs.NotchFps = notchFps
+			end
 			_G.NotchFps = notchFps
 	
 			pcall(function()
@@ -2247,6 +2256,9 @@ local function initNotch(afkScreen, uiUtils)
 	-- Notch Cleanup closure
 	local function destroyNotch()
 		notchStatsRunning = false
+		if KittyGs then
+			KittyGs.NotchFps = nil
+		end
 		_G.NotchFps = nil
 		borderOutlineEnabled = false
 		if borderRotationConn then borderRotationConn:Disconnect(); borderRotationConn = nil end
@@ -2467,6 +2479,9 @@ function afkScreen.Destroy()
 	if env.__KITTY_AFK == afkScreen then
 		env.__KITTY_AFK = nil
 	end
+	if KittyGs and KittyGs.AfkScreen == afkScreen then
+		KittyGs.AfkScreen = nil
+	end
 end
 
 -- Auto-hook na janela se já vinculada
@@ -2480,5 +2495,8 @@ end
 
 -- Salva globalmente para reloads seguros
 env.__KITTY_AFK = afkScreen
+if KittyGs then
+	KittyGs.AfkScreen = afkScreen
+end
 
 return afkScreen
