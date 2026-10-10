@@ -1635,20 +1635,12 @@ local notchDragging = false
 local notchDragged = false
 local notchDragStartMouse = nil
 local notchDragStartAbsPos = nil
+local notchGrabOffset = Vector2.zero
 local notchDragInput = nil
 
 local transFrame = nil
 
 local function getGuiInsetFor(gui)
-	if not gui or gui.IgnoreGuiInset == true then
-		return Vector2.zero
-	end
-	local s, inset = pcall(function()
-		return GuiService:GetGuiInset()
-	end)
-	if s and inset then
-		return inset
-	end
 	return Vector2.zero
 end
 
@@ -1733,7 +1725,7 @@ function afkScreen.OpenWindowAnimated(targetWin)
 
 	local notchAbsPos = notchFrame.AbsolutePosition
 	local notchAbsSize = notchFrame.AbsoluteSize
-	local startPos = UDim2.fromOffset(notchAbsPos.X - inset.X, notchAbsPos.Y - inset.Y)
+	local startPos = UDim2.fromOffset(notchAbsPos.X, notchAbsPos.Y)
 	local startSize = UDim2.fromOffset(notchAbsSize.X, notchAbsSize.Y)
 
 	local targetPos = defaultWinPos
@@ -1861,7 +1853,7 @@ function afkScreen.CloseWindowAnimated(targetWin)
 
 	local notchAbsPos = notchFrame.AbsolutePosition
 	local notchAbsSize = notchFrame.AbsoluteSize
-	local targetNotchPos = UDim2.fromOffset(notchAbsPos.X - inset.X, notchAbsPos.Y - inset.Y)
+	local targetNotchPos = UDim2.fromOffset(notchAbsPos.X, notchAbsPos.Y)
 	local targetNotchSize = UDim2.fromOffset(notchAbsSize.X, notchAbsSize.Y)
 
 	mf.ClipsDescendants = true
@@ -2011,13 +2003,7 @@ local notchInputBeganConn = interactionBtn.InputBegan:Connect(function(input)
 		notchDragging = true
 		notchDragged = false
 		notchDragStartMouse = Vector2.new(input.Position.X, input.Position.Y)
-		notchDragStartAbsPos = notchFrame.AbsolutePosition
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				notchDragging = false
-			end
-		end)
+		notchGrabOffset = notchDragStartMouse - notchFrame.AbsolutePosition
 	end
 end)
 
@@ -2032,27 +2018,19 @@ local notchGlobalInputConn = UserInputService.InputChanged:Connect(function(inpu
 		notchDragging = false
 		return
 	end
-	if input == notchDragInput and notchDragging and notchDragStartMouse and notchDragStartAbsPos then
+	if notchDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and notchDragStartMouse and notchGrabOffset then
 		local currentMouse = Vector2.new(input.Position.X, input.Position.Y)
 		local delta = currentMouse - notchDragStartMouse
 
-		if delta.Magnitude > 6 then
+		if delta.Magnitude > 4 then
 			notchDragged = true
-			if isNotchExpanded then
-				collapseNotch()
-			end
-
 			local vp = (Camera and Camera.ViewportSize) or Vector2.new(1920, 1080)
 			local curW = notchFrame.AbsoluteSize.X
 			local curH = notchFrame.AbsoluteSize.Y
-
-			-- Top-left pixel clamping durante o arraste
-			local targetTopLeftX = math.clamp(notchDragStartAbsPos.X + delta.X, 5, vp.X - curW - 5)
-			local targetTopLeftY = math.clamp(notchDragStartAbsPos.Y + delta.Y, 5, vp.Y - curH - 5)
-
-			local ax = notchFrame.AnchorPoint.X
-			local ay = notchFrame.AnchorPoint.Y
-			notchFrame.Position = UDim2.fromOffset(targetTopLeftX + ax * curW, targetTopLeftY + ay * curH)
+			local targetX = math.clamp(currentMouse.X - notchGrabOffset.X, 10, vp.X - curW - 10)
+			local targetY = math.clamp(currentMouse.Y - notchGrabOffset.Y, 10, vp.Y - curH - 10)
+			notchFrame.AnchorPoint = Vector2.new(0, 0)
+			notchFrame.Position = UDim2.fromOffset(targetX, targetY)
 		end
 	end
 end)
@@ -2060,76 +2038,43 @@ end)
 local notchInputEndedConn = interactionBtn.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 		if notchDragged and isNotchDraggable then
-			-- Arraste finalizado: calcular AnchorPoint dinâmico e clamping para expansão segura
 			local vp = (Camera and Camera.ViewportSize) or Vector2.new(1920, 1080)
 			local curW = notchFrame.AbsoluteSize.X
 			local curH = notchFrame.AbsoluteSize.Y
-			local absPos = notchFrame.AbsolutePosition
-			local centerX = absPos.X + curW / 2
-			local centerY = absPos.Y + curH / 2
-
-			-- 1. Zona Horizontal
-			local newAx = 0.5
-			if centerX < vp.X * 0.35 then
-				newAx = 0 -- Esquerda -> expande para a Direita
-			elseif centerX > vp.X * 0.65 then
-				newAx = 1 -- Direita -> expande para a Esquerda
+			local centerX = notchFrame.AbsolutePosition.X + curW * 0.5
+			local centerY = notchFrame.AbsolutePosition.Y + curH * 0.5
+			local isBottom = (centerY > vp.Y * 0.5)
+			local targetPreset = "Top-Center"
+			if isBottom then
+				if centerX < vp.X * 0.35 then
+					targetPreset = "Bottom-Left"
+				elseif centerX > vp.X * 0.65 then
+					targetPreset = "Bottom-Right"
+				else
+					targetPreset = "Bottom-Center"
+				end
 			else
-				newAx = 0.5 -- Centro -> expande simétrico
-			end
-
-			-- 2. Clamping horizontal garantindo que não saia da tela
-			local finalTopLeftX = absPos.X
-			local finalTopLeftY = absPos.Y
-
-			if newAx == 0 then
-				if finalTopLeftX + 440 > vp.X - 10 then
-					finalTopLeftX = math.max(10, vp.X - 440 - 10)
-				end
-			elseif newAx == 1 then
-				if (finalTopLeftX + curW) - 440 < 10 then
-					finalTopLeftX = 10 + 440 - curW
-				end
-			else -- 0.5
-				local expLeft = (finalTopLeftX + curW / 2) - 220
-				local expRight = (finalTopLeftX + curW / 2) + 220
-				if expLeft < 10 then
-					finalTopLeftX = 10 + 220 - curW / 2
-				elseif expRight > vp.X - 10 then
-					finalTopLeftX = (vp.X - 10 - 220) - curW / 2
+				if centerX < vp.X * 0.35 then
+					targetPreset = "Top-Left"
+				elseif centerX > vp.X * 0.65 then
+					targetPreset = "Top-Right"
+				else
+					targetPreset = "Top-Center"
 				end
 			end
-
-			finalTopLeftX = math.clamp(finalTopLeftX, 10, vp.X - curW - 10)
-
-			-- 3. Snap e ancoragem vertical
-			local isBottomHalf = (centerY > vp.Y * 0.5)
-			if isBottomHalf then
-				notchFrame.AnchorPoint = Vector2.new(newAx, 1)
-				local targetY = math.min(vp.Y - 10, finalTopLeftY + curH)
-				if targetY > vp.Y - 45 then
-					targetY = vp.Y - 10
-				end
-				notchFrame.Position = UDim2.fromOffset(finalTopLeftX + newAx * curW, targetY)
-			else
-				notchFrame.AnchorPoint = Vector2.new(newAx, 0)
-				local targetY = math.max(10, finalTopLeftY)
-				if targetY < 45 then
-					targetY = 10
-				end
-				notchFrame.Position = UDim2.fromOffset(finalTopLeftX + newAx * curW, targetY)
-			end
+			applyPreset(targetPreset, true)
+			notchDragging = false
+			notchDragged = false
 		else
-			-- Clique direto (sem arraste)
 			if not isNotchExpanded then
 				expandNotch()
 			else
 				toggleObsidianWindow()
 				collapseNotch()
 			end
+			notchDragging = false
+			notchDragged = false
 		end
-		notchDragging = false
-		notchDragged = false
 	end
 end)
 
