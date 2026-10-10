@@ -24,6 +24,7 @@ local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 local TeleportService = game:GetService("TeleportService")
 local Stats = game:GetService("Stats")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 if not LocalPlayer then
@@ -174,6 +175,7 @@ return function(dashTab, ctx)
 	local headerCorner = Instance.new("UICorner")
 	headerCorner.CornerRadius = UDim.new(0, 8)
 	headerCorner.Parent = headerFrame
+
 	local headerStroke = Instance.new("UIStroke")
 	headerStroke.Color = Border
 	headerStroke.Thickness = 1
@@ -187,6 +189,7 @@ return function(dashTab, ctx)
 	headerPad.PaddingBottom = UDim.new(0, 11)
 	headerPad.Parent = headerFrame
 
+	-- Player Avatar (46x46px, UICorner 8px, UIStroke PinkFocus 1.5px)
 	local playerAvatar = Instance.new("ImageLabel")
 	playerAvatar.Name = "PlayerAvatar"
 	playerAvatar.BackgroundColor3 = SurfaceAlt
@@ -200,12 +203,14 @@ return function(dashTab, ctx)
 	local avatarCorner = Instance.new("UICorner")
 	avatarCorner.CornerRadius = UDim.new(0, 8)
 	avatarCorner.Parent = playerAvatar
+
 	local avatarStroke = Instance.new("UIStroke")
 	avatarStroke.Color = PinkFocus
 	avatarStroke.Thickness = 1.5
 	avatarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	avatarStroke.Parent = playerAvatar
 
+	-- Player Identity Container (Clean: DisplayName + @Username only)
 	local playerInfo = Instance.new("Frame")
 	playerInfo.Name = "PlayerInfo"
 	playerInfo.BackgroundTransparency = 1
@@ -239,6 +244,7 @@ return function(dashTab, ctx)
 	playerUsername.TextTruncate = Enum.TextTruncate.AtEnd
 	playerUsername.Parent = playerInfo
 
+	-- Right Side of Header (Game Title, Server Version & Game Icon)
 	local headerRight = Instance.new("Frame")
 	headerRight.Name = "HeaderRight"
 	headerRight.BackgroundTransparency = 1
@@ -260,6 +266,7 @@ return function(dashTab, ctx)
 	local gameIconCorner = Instance.new("UICorner")
 	gameIconCorner.CornerRadius = UDim.new(0, 8)
 	gameIconCorner.Parent = gameIcon
+
 	local gameIconStroke = Instance.new("UIStroke")
 	gameIconStroke.Color = PinkFocus
 	gameIconStroke.Thickness = 1.5
@@ -358,8 +365,9 @@ return function(dashTab, ctx)
 		return card
 	end
 
-	-- Card 1: SESSION TIME
+	-- Card 1 (Top-Left): SESSION TIME
 	local cardSession = createBaseCard("SessionTimeCard", 1)
+
 	local headerSess = Instance.new("Frame")
 	headerSess.Name = "HeaderRow"
 	headerSess.BackgroundTransparency = 1
@@ -410,8 +418,9 @@ return function(dashTab, ctx)
 	sessionSub.TextXAlignment = Enum.TextXAlignment.Left
 	sessionSub.Parent = cardSession
 
-	-- Card 2: KEY TYPE
+	-- Card 2 (Top-Right): KEY TYPE
 	local cardKeyType = createBaseCard("KeyTypeCard", 2)
+
 	local headerKey = Instance.new("Frame")
 	headerKey.Name = "HeaderRow"
 	headerKey.BackgroundTransparency = 1
@@ -462,8 +471,9 @@ return function(dashTab, ctx)
 	keyTypeSub.TextXAlignment = Enum.TextXAlignment.Left
 	keyTypeSub.Parent = cardKeyType
 
-	-- Card 3: KEY EXPIRATION
+	-- Card 3 (Bottom-Left): KEY EXPIRATION
 	local cardKeyExp = createBaseCard("KeyExpCard", 3)
+
 	local headerExp = Instance.new("Frame")
 	headerExp.Name = "HeaderRow"
 	headerExp.BackgroundTransparency = 1
@@ -539,7 +549,7 @@ return function(dashTab, ctx)
 	expStatusText.LayoutOrder = 2
 	expStatusText.Parent = subKeyExp
 
-	-- Card 4: SCRIPT DISCORD
+	-- Card 4 (Bottom-Right): SCRIPT DISCORD
 	local cardDiscord = createBaseCard("DiscordCard", 4)
 	local dCardLayout = cardDiscord:FindFirstChildWhichIsA("UIListLayout")
 	if dCardLayout then
@@ -574,7 +584,7 @@ return function(dashTab, ctx)
 
 	local discordBtn = Instance.new("TextButton")
 	discordBtn.Name = "DiscordBtn"
-	discordBtn.BackgroundColor3 = Color3.fromRGB(28, 26, 42)
+	discordBtn.BackgroundColor3 = Color3.fromRGB(28, 26, 42) -- #1C1A2A
 	discordBtn.BorderSizePixel = 0
 	discordBtn.Size = UDim2.new(1, 0, 0, 34)
 	discordBtn.LayoutOrder = 2
@@ -586,8 +596,9 @@ return function(dashTab, ctx)
 	local dbCorner = Instance.new("UICorner")
 	dbCorner.CornerRadius = UDim.new(0, 6)
 	dbCorner.Parent = discordBtn
+
 	local dbStroke = Instance.new("UIStroke")
-	dbStroke.Color = Color3.fromRGB(46, 42, 66)
+	dbStroke.Color = Color3.fromRGB(46, 42, 66) -- #2E2A42
 	dbStroke.Thickness = 1
 	dbStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	dbStroke.Parent = discordBtn
@@ -613,7 +624,7 @@ return function(dashTab, ctx)
 	discordUrlText.BackgroundTransparency = 1
 	discordUrlText.Font = Enum.Font.GothamMedium
 	discordUrlText.Text = "discord.gg/wcprsvmcp8"
-	discordUrlText.TextColor3 = Color3.fromRGB(226, 232, 240)
+	discordUrlText.TextColor3 = Color3.fromRGB(226, 232, 240) -- #E2E8F0
 	discordUrlText.TextSize = 11
 	discordUrlText.TextTruncate = Enum.TextTruncate.AtEnd
 	discordUrlText.AutomaticSize = Enum.AutomaticSize.X
@@ -621,7 +632,7 @@ return function(dashTab, ctx)
 
 	local copyPill = Instance.new("Frame")
 	copyPill.Name = "CopyPill"
-	copyPill.BackgroundColor3 = DiscordPillBg
+	copyPill.BackgroundColor3 = DiscordPillBg -- #32202E
 	copyPill.BorderSizePixel = 0
 	copyPill.AnchorPoint = Vector2.new(1, 0.5)
 	copyPill.Position = UDim2.new(1, -8, 0.5, 0)
@@ -632,8 +643,9 @@ return function(dashTab, ctx)
 	local cpCorner = Instance.new("UICorner")
 	cpCorner.CornerRadius = UDim.new(0, 4)
 	cpCorner.Parent = copyPill
+
 	local cpStroke = Instance.new("UIStroke")
-	cpStroke.Color = PinkFocus
+	cpStroke.Color = PinkFocus -- #D68EB4
 	cpStroke.Thickness = 1
 	cpStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	cpStroke.Parent = copyPill
@@ -656,10 +668,10 @@ return function(dashTab, ctx)
 
 	local isCopyingDiscord = false
 	discordBtn.MouseEnter:Connect(function()
-		discordBtn.BackgroundColor3 = Color3.fromRGB(38, 34, 56)
+		discordBtn.BackgroundColor3 = Color3.fromRGB(38, 34, 56) -- #262238
 	end)
 	discordBtn.MouseLeave:Connect(function()
-		discordBtn.BackgroundColor3 = Color3.fromRGB(28, 26, 42)
+		discordBtn.BackgroundColor3 = Color3.fromRGB(28, 26, 42) -- #1C1A2A
 	end)
 
 	discordBtn.MouseButton1Click:Connect(function()
@@ -701,6 +713,7 @@ return function(dashTab, ctx)
 	local tcCorner = Instance.new("UICorner")
 	tcCorner.CornerRadius = UDim.new(0, 8)
 	tcCorner.Parent = telemetryCard
+
 	local tcStroke = Instance.new("UIStroke")
 	tcStroke.Color = Border
 	tcStroke.Thickness = 1
@@ -773,6 +786,7 @@ return function(dashTab, ctx)
 		local chCorner = Instance.new("UICorner")
 		chCorner.CornerRadius = UDim.new(0, 6)
 		chCorner.Parent = chip
+
 		local chStroke = Instance.new("UIStroke")
 		chStroke.Color = ChipBorder
 		chStroke.Thickness = 1
@@ -837,7 +851,7 @@ return function(dashTab, ctx)
 	local function createQuickButton(name, text, order)
 		local btn = Instance.new("TextButton")
 		btn.Name = name
-		btn.BackgroundColor3 = Color3.fromRGB(26, 24, 40)
+		btn.BackgroundColor3 = Color3.fromRGB(26, 24, 40) -- #1A1828
 		btn.BorderSizePixel = 0
 		btn.Size = UDim2.new(0.25, -6, 1, 0)
 		btn.LayoutOrder = order
@@ -851,8 +865,9 @@ return function(dashTab, ctx)
 		local bCorner = Instance.new("UICorner")
 		bCorner.CornerRadius = UDim.new(0, 6)
 		bCorner.Parent = btn
+
 		local bStroke = Instance.new("UIStroke")
-		bStroke.Color = Color3.fromRGB(44, 39, 62)
+		bStroke.Color = Color3.fromRGB(44, 39, 62) -- #2C273E
 		bStroke.Thickness = 1
 		bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		bStroke.Parent = btn
@@ -919,7 +934,34 @@ return function(dashTab, ctx)
 		end)
 	end)
 
-	-- 9. Throttled continuous telemetry loop (1.0s)
+	-- 9. Throttled continuous telemetry loop (1.0s) with real-time frame sampling
+	local renderFrameCount = 0
+	local lastFpsTime = os.clock()
+	local renderConn = nil
+	pcall(function()
+		renderConn = RunService.RenderStepped:Connect(function()
+			renderFrameCount = renderFrameCount + 1
+		end)
+	end)
+
+	if renderConn then
+		if ctx.Connections and type(ctx.Connections) == "table" then
+			table.insert(ctx.Connections, renderConn)
+		end
+		if _G.AnimeBreakerConnections and type(_G.AnimeBreakerConnections) == "table" then
+			table.insert(_G.AnimeBreakerConnections, renderConn)
+		end
+	end
+
+	local function disconnectRenderConn()
+		if renderConn then
+			pcall(function()
+				renderConn:Disconnect()
+			end)
+			renderConn = nil
+		end
+	end
+
 	task.spawn(function()
 		while _G.AnimeBreakerRunToken == ctx.scriptRunToken do
 			pcall(function()
@@ -953,10 +995,11 @@ return function(dashTab, ctx)
 					mem = math.floor(Stats:GetTotalMemoryUsageMb())
 				end)
 
-				local fps = 0
-				pcall(function()
-					fps = math.floor(workspace:GetRealPhysicsFPS())
-				end)
+				local now = os.clock()
+				local dtSec = math.max(0.001, now - lastFpsTime)
+				lastFpsTime = now
+				local fps = math.round(renderFrameCount / dtSec)
+				renderFrameCount = 0
 				if fps <= 0 then
 					fps = 60
 				end
@@ -986,6 +1029,8 @@ return function(dashTab, ctx)
 			end)
 			task.wait(1.0)
 		end
+
+		disconnectRenderConn()
 	end)
 
 	return {
@@ -994,5 +1039,8 @@ return function(dashTab, ctx)
 		TelemetryCard = telemetryCard,
 		QuickActions = quickActionsRow,
 		SyncAutoFarm = syncAutoFarmBtn,
+		Disconnect = disconnectRenderConn,
+		Cleanup = disconnectRenderConn,
+		Destroy = disconnectRenderConn,
 	}
 end
