@@ -600,7 +600,4 @@ local function createNotchMonitor(parentGroup: any, ctx: any)
 	return monitorWrapper
 end
 
--- Associa PRESETS estaticamente à função retornada
-(createNotchMonitor :: any).PRESETS = NOTCH_PRESETS_DATA
-
 return createNotchMonitor
