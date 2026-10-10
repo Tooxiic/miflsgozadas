@@ -771,6 +771,14 @@ function OverviewModule.new(uiUtils: any?, tabs: any?, options: any?)
     -- ------------------------------------------------------------------------
     local sessionStartTime = os.time()
     if opts.AutoStartTelemetry ~= false then
+        local renderFrameCount = 0
+        local lastFpsTime = os.clock()
+        local renderConn = RunService.RenderStepped:Connect(function()
+            renderFrameCount = renderFrameCount + 1
+        end)
+        registerConn(renderConn)
+        self._renderConn = renderConn
+
         task.spawn(function()
             while self.RunToken == runToken do
                 pcall(function()
@@ -794,13 +802,14 @@ function OverviewModule.new(uiUtils: any?, tabs: any?, options: any?)
                     end
                     metricPing.SetValue(tostring(pingMs) .. " ms")
 
-                    -- 4. FPS
-                    local fps = 60
-                    local fpsSuccess, fpsVal = pcall(function()
-                        return workspace:GetRealPhysicsFPS()
-                    end)
-                    if fpsSuccess and fpsVal and fpsVal > 0 then
-                        fps = math.floor(fpsVal)
+                    -- 4. FPS Real (RenderStepped)
+                    local now = os.clock()
+                    local dtSec = math.max(0.001, now - lastFpsTime)
+                    lastFpsTime = now
+                    local fps = math.round(renderFrameCount / dtSec)
+                    renderFrameCount = 0
+                    if fps <= 0 then
+                        fps = 60
                     end
                     metricFps.SetValue(tostring(fps))
 
@@ -892,6 +901,10 @@ function OverviewModule:Destroy()
     local env = (typeof(getgenv) == "function" and getgenv()) or _G
     if env.AnimeBreakerOverviewRunToken == self.RunToken then
         env.AnimeBreakerOverviewRunToken = nil
+    end
+    if self._renderConn then
+        pcall(function() self._renderConn:Disconnect() end)
+        self._renderConn = nil
     end
     if self.Connections then
         for _, conn in ipairs(self.Connections) do
