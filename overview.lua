@@ -773,11 +773,16 @@ function OverviewModule.new(uiUtils: any?, tabs: any?, options: any?)
     if opts.AutoStartTelemetry ~= false then
         local renderFrameCount = 0
         local lastFpsTime = os.clock()
-        local renderConn = RunService.RenderStepped:Connect(function()
-            renderFrameCount = renderFrameCount + 1
+        local renderConn = nil
+        pcall(function()
+            renderConn = RunService.RenderStepped:Connect(function()
+                renderFrameCount = renderFrameCount + 1
+            end)
         end)
-        registerConn(renderConn)
-        self._renderConn = renderConn
+        if renderConn then
+            registerConn(renderConn)
+            self._renderConn = renderConn
+        end
 
         task.spawn(function()
             while self.RunToken == runToken do
@@ -808,6 +813,11 @@ function OverviewModule.new(uiUtils: any?, tabs: any?, options: any?)
                     lastFpsTime = now
                     local fps = math.round(renderFrameCount / dtSec)
                     renderFrameCount = 0
+
+                    if _G.NotchFps and type(_G.NotchFps) == "number" and _G.NotchFps > 0 then
+                        fps = _G.NotchFps
+                    end
+
                     if fps <= 0 then
                         fps = 60
                     end
